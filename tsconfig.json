@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@filler-word-counter/*": ["./src/*"]
+      "@filler-word-counter/*": ["./src/*"],
+      "@/*": ["./*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

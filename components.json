@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "tailwind.config.ts",
+    "css": "src/app/globals.css",
+    "baseColor": "zinc",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@filler-word-counter/components",
+    "utils": "@filler-word-counter/lib/utils",
+    "ui": "@filler-word-counter/components/ui",
+    "lib": "@filler-word-counter/lib",
+    "hooks": "@filler-word-counter/hooks"
+  },
+  "iconLibrary": "lucide"
+}
