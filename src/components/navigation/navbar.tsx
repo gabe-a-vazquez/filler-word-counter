@@ -6,7 +6,7 @@ const Navbar = () => {
       <div className="mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <Link href="/home" className="text-xl font-bold text-gray-800">
-            Filler Word Counter
+            Uhm Counter
           </Link>
         </div>
 
