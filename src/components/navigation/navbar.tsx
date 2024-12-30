@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@filler-word-counter/components/shadcn/button";
 
 const Navbar = () => {
   return (
@@ -11,17 +12,11 @@ const Navbar = () => {
         </div>
 
         <div className="flex gap-4">
-          <Link
-            href="/signup"
-            className="text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            Sign up
+          <Link href="/signup">
+            <Button>Sign up</Button>
           </Link>
-          <Link
-            href="/"
-            className="text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            Login
+          <Link href="/login">
+            <Button variant="ghost">Login</Button>
           </Link>
         </div>
       </div>
