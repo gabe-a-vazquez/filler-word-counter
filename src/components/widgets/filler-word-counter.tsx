@@ -25,15 +25,7 @@ interface SpeechRecognition extends EventTarget {
   onresult: (event: any) => void;
 }
 
-const FILLER_WORDS = [
-  "um",
-  "uh",
-  "like",
-  "you know",
-  "actually",
-  "basically",
-  "literally",
-];
+const FILLER_WORDS = ["like", "you know", "actually", "basically", "literally"];
 
 export default function FillerWordCounter() {
   const [isListening, setIsListening] = useState(false);
