@@ -1,4 +1,6 @@
 import { Inter } from "next/font/google";
+import { cn } from "@filler-word-counter/lib/utils";
+import { ThemeProvider } from "@filler-word-counter/components/ui/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,10 +18,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <Navbar />
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={cn(
+          "min-h-screen bg-background antialiased",
+          inter.className
+        )}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Navbar />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
