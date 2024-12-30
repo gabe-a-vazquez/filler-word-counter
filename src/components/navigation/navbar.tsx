@@ -12,7 +12,7 @@ const Navbar = () => {
 
         <div className="flex gap-4">
           <Link
-            href="/"
+            href="/signup"
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             Sign up

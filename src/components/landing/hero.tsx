@@ -12,14 +12,14 @@ export default function Hero() {
         real-time. Perfect for presentations, interviews, and speeches.
       </p>
       <div className="mt-10 flex gap-4">
-        <Link href="/signup">
+        <Link href="/">
           <Button size="lg" className="text-lg">
             Get Started Free
           </Button>
         </Link>
-        <Link href="#features">
+        <Link href="/signup">
           <Button size="lg" variant="outline" className="text-lg">
-            Learn More
+            Sign up
           </Button>
         </Link>
       </div>
