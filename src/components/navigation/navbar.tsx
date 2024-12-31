@@ -40,8 +40,8 @@ export default function Navbar() {
   return (
     <nav className="h-16 border-b">
       <div className="h-full mx-auto flex items-center justify-between px-4">
-        <Link href="/" className="text-xl font-semibold">
-          Filler Word Counter
+        <Link href={user ? "/" : "/home"} className="text-xl font-semibold">
+          Uhm Counter
         </Link>
 
         <div className="flex items-center gap-4">

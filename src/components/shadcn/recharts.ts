@@ -1,1 +1,11 @@
-export { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+export {
+  Bar,
+  BarChart,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+} from "recharts";
