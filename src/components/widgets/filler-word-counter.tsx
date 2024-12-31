@@ -16,6 +16,9 @@ import {
   CardTitle,
 } from "@filler-word-counter/components/shadcn/card";
 import { Progress } from "@filler-word-counter/components/shadcn/progress";
+import { auth, db } from "@filler-word-counter/lib/firebase/config";
+import { doc, setDoc } from "firebase/firestore";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
@@ -25,13 +28,16 @@ interface SpeechRecognition extends EventTarget {
   onresult: (event: any) => void;
 }
 
-const FILLER_WORDS = ["like", "you know", "actually", "basically", "literally"];
+const FILLER_WORDS = ["like", "actually", "basically", "literally"];
 
 export default function FillerWordCounter() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [fillerCount, setFillerCount] = useState<Record<string, number>>({});
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const [user] = useAuthState(auth);
+  const [isSaving, setIsSaving] = useState(false);
+  const [sessionId] = useState<string>(new Date().getTime().toString());
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -64,6 +70,7 @@ export default function FillerWordCounter() {
   };
 
   const toggleListening = () => {
+    console.log("sessionId", sessionId);
     if (!isListening) {
       recognitionRef.current?.start();
     } else {
@@ -79,6 +86,31 @@ export default function FillerWordCounter() {
   const words = transcript.split(" ").length;
   const fillerPercentage = words > 0 ? (totalFillerWords / words) * 100 : 0;
 
+  const handleSave = async () => {
+    if (!user) return;
+
+    setIsSaving(true);
+    try {
+      await setDoc(doc(db, user.uid, sessionId), {
+        userId: user.uid,
+        fillerCount,
+        totalWords: words,
+        totalFillerWords,
+        fillerPercentage,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Error saving transcript:", error);
+      if (error instanceof Error) {
+        alert(`Failed to save: ${error.message}`);
+      } else {
+        alert("Failed to save transcript. Please try again.");
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-4">
       <Card>
@@ -86,12 +118,24 @@ export default function FillerWordCounter() {
           <CardTitle>Speech Analysis</CardTitle>
         </CardHeader>
         <CardContent>
-          <Button
-            onClick={toggleListening}
-            variant={isListening ? "destructive" : "default"}
-          >
-            {isListening ? "Stop Listening" : "Start Listening"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={toggleListening}
+              variant={isListening ? "destructive" : "default"}
+            >
+              {isListening ? "Stop Listening" : "Start Listening"}
+            </Button>
+
+            {user && transcript && (
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                variant="outline"
+              >
+                {isSaving ? "Saving..." : "Save Transcript"}
+              </Button>
+            )}
+          </div>
 
           <div className="mt-4">
             <p className="text-sm text-muted-foreground mb-2">

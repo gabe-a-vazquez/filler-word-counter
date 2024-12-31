@@ -62,6 +62,11 @@ export default function Navbar() {
                 <DropdownMenuItem className="font-medium">
                   {user.displayName}
                 </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link href="/dashboard" className="w-full">
+                    Dashboard
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>
                   Sign out
                 </DropdownMenuItem>
