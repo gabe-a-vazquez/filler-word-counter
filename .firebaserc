@@ -1,8 +1,0 @@
-{
-  "projects": {
-    "default": "filler-word-counter",
-    "filler-word-counter": "filler-word-counter"
-  },
-  "targets": {},
-  "etags": {}
-}
