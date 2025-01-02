@@ -3,6 +3,10 @@ const nextConfig = {
   images: {
     domains: ["lh3.googleusercontent.com", "googleusercontent.com"],
   },
+  output: "standalone",
+  experimental: {
+    serverActions: true,
+  },
 };
 
 module.exports = nextConfig;
