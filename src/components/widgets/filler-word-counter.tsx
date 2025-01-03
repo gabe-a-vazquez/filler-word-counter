@@ -38,6 +38,8 @@ export default function FillerWordCounter() {
   const [user] = useAuthState(auth);
   const [isSaving, setIsSaving] = useState(false);
   const [sessionId] = useState<string>(new Date().getTime().toString());
+  const [isPaused, setIsPaused] = useState(false);
+  const pausedTranscriptRef = useRef("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -52,8 +54,8 @@ export default function FillerWordCounter() {
         for (let i = 0; i < event.results.length; i++) {
           currentTranscript += event.results[i][0].transcript + " ";
         }
-        setTranscript(currentTranscript);
-        countFillerWords(currentTranscript);
+        setTranscript(pausedTranscriptRef.current + currentTranscript);
+        countFillerWords(pausedTranscriptRef.current + currentTranscript);
       };
     }
   }, []);
@@ -74,12 +76,23 @@ export default function FillerWordCounter() {
   };
 
   const toggleListening = () => {
+    if (!recognitionRef.current) return;
+
     if (!isListening) {
-      recognitionRef.current?.start();
+      recognitionRef.current.start();
+      setIsListening(true);
+      setIsPaused(false);
     } else {
-      recognitionRef.current?.stop();
+      if (isPaused) {
+        pausedTranscriptRef.current = transcript;
+        recognitionRef.current.start();
+        setIsPaused(false);
+      } else {
+        pausedTranscriptRef.current = transcript;
+        recognitionRef.current.stop();
+        setIsPaused(true);
+      }
     }
-    setIsListening(!isListening);
   };
 
   const totalFillerWords = Object.values(fillerCount).reduce(
@@ -129,10 +142,26 @@ export default function FillerWordCounter() {
           <div className="flex gap-2">
             <Button
               onClick={toggleListening}
-              variant={isListening ? "destructive" : "default"}
+              variant={isListening && !isPaused ? "destructive" : "default"}
             >
-              {isListening ? "Stop Listening" : "Start Listening"}
+              {!isListening ? "Start Listening" : isPaused ? "Resume" : "Pause"}
             </Button>
+
+            {(isListening || transcript) && (
+              <Button
+                onClick={() => {
+                  recognitionRef.current?.stop();
+                  setIsListening(false);
+                  setIsPaused(false);
+                  setTranscript("");
+                  setFillerCount({});
+                  pausedTranscriptRef.current = "";
+                }}
+                variant="outline"
+              >
+                Reset
+              </Button>
+            )}
 
             {user && transcript && (
               <Button
