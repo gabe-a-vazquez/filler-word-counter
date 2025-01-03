@@ -168,6 +168,9 @@ export default function DashboardPage() {
     }
   };
 
+  // Get the latest timestamp from the data
+  const latestTimestamp = aggregatedData?.timeSeriesData[0]?.timestamp || null;
+
   return (
     <div className="container mx-auto p-8">
       <h1 className="text-3xl font-bold mb-8">Analytics Dashboard</h1>
@@ -176,11 +179,9 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>
               Filler Word Percentage Over Time
-              {selectedTimestamp && (
-                <span className="text-sm font-normal ml-2">
-                  (Click to view distribution)
-                </span>
-              )}
+              <span className="text-sm font-normal ml-2">
+                (Click to view distribution)
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -211,11 +212,14 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>
               Filler Words Distribution
-              {selectedTimestamp && (
-                <span className="text-sm font-normal ml-2">
-                  ({format(new Date(selectedTimestamp), "MMM d, yyyy HH:mm")})
-                </span>
-              )}
+              <span className="text-sm font-normal ml-2">
+                (
+                {format(
+                  new Date(selectedTimestamp || latestTimestamp || new Date()),
+                  "MMM d, yyyy HH:mm"
+                )}
+                )
+              </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
