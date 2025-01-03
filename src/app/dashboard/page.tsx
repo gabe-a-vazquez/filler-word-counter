@@ -16,6 +16,7 @@ import {
   LineChart,
   Tooltip,
   Legend,
+  Cell,
 } from "@filler-word-counter/components/shadcn/recharts";
 import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { db, auth } from "@filler-word-counter/lib/firebase/config";
@@ -172,67 +173,137 @@ export default function DashboardPage() {
   const latestTimestamp = aggregatedData?.timeSeriesData[0]?.timestamp || null;
 
   return (
-    <div className="container mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-8">Analytics Dashboard</h1>
-      <div className="mt-8">
-        <Card>
+    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 p-8">
+      <h1 className="text-3xl font-bold mb-8 text-center">
+        Analytics Dashboard
+      </h1>
+
+      {/* Timeline Section */}
+      <div className="max-w-7xl mx-auto">
+        <Card className="hover:shadow-xl transition-all duration-300 mb-12">
           <CardHeader>
-            <CardTitle>
-              Filler Word Percentage Over Time
-              <span className="text-sm font-normal ml-2">
-                (Click to view distribution)
+            <CardTitle className="flex items-center justify-between">
+              <span>Your Filler Word Journey</span>
+              <span className="text-sm font-normal text-blue-500 animate-bounce">
+                ↓ Pick a moment in time ↓
               </span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-50/10 pointer-events-none" />
             <ResponsiveContainer width="100%" height={350}>
               <LineChart
                 data={timeSeriesChartData}
                 onClick={handleTimeSeriesClick}
+                className="cursor-pointer"
               >
+                <defs>
+                  <linearGradient
+                    id="colorPercentage"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0.2} />
+                  </linearGradient>
+                </defs>
                 <XAxis dataKey="date" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "rgba(255, 255, 255, 0.9)",
+                    borderRadius: "8px",
+                    border: "none",
+                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                  }}
+                />
                 <Legend />
                 <Line
                   type="monotone"
                   dataKey="percentage"
                   stroke="#2563eb"
                   name="Filler Word %"
-                  activeDot={{ r: 8 }}
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{
+                    r: 8,
+                    fill: "#2563eb",
+                    stroke: "#fff",
+                    strokeWidth: 2,
+                  }}
+                  fill="url(#colorPercentage)"
                 />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-      </div>
 
-      <div className="mt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              Filler Words Distribution
-              <span className="text-sm font-normal ml-2">
-                (
-                {format(
-                  new Date(selectedTimestamp || latestTimestamp || new Date()),
-                  "MMM d, yyyy HH:mm"
-                )}
-                )
-              </span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={getDistributionData()}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="#2563eb" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {/* Distribution Section with Animation */}
+        <div className="relative">
+          <div className="absolute left-1/2 transform -translate-x-1/2 -top-6 flex flex-col items-center">
+            <div className="w-0.5 h-12 bg-gradient-to-b from-blue-200 to-transparent" />
+            <div className="animate-pulse">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="#93c5fd"
+                className="transform -translate-y-4"
+              >
+                <polygon points="12 2 2 12 12 22 22 12" />
+              </svg>
+            </div>
+          </div>
+
+          <Card className="bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Filler Words Breakdown</span>
+                <span className="text-sm font-normal text-gray-600">
+                  {format(
+                    new Date(
+                      selectedTimestamp || latestTimestamp || new Date()
+                    ),
+                    "MMM d, yyyy HH:mm"
+                  )}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={getDistributionData()}>
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(255, 255, 255, 0.9)",
+                      borderRadius: "8px",
+                      border: "none",
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    }}
+                  />
+                  <Bar
+                    dataKey="value"
+                    fill="#2563eb"
+                    radius={[4, 4, 0, 0]}
+                    className="transition-all duration-300"
+                  >
+                    {/* Add hover animation to bars */}
+                    {getDistributionData().map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        className="hover:brightness-110 cursor-pointer"
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

@@ -8,4 +8,5 @@ export {
   YAxis,
   Tooltip,
   Legend,
+  Cell,
 } from "recharts";
