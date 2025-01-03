@@ -60,7 +60,11 @@ export default function FillerWordCounter() {
 
   const countFillerWords = (text: string) => {
     const counts: Record<string, number> = {};
-    const words = text.toLowerCase().split(" ");
+    const words = text
+      .toLowerCase()
+      .trim()
+      .split(/\s+/)
+      .filter((word) => word.length > 0);
 
     FILLER_WORDS.forEach((fillerWord) => {
       counts[fillerWord] = words.filter((word) => word === fillerWord).length;
@@ -70,7 +74,6 @@ export default function FillerWordCounter() {
   };
 
   const toggleListening = () => {
-    console.log("sessionId", sessionId);
     if (!isListening) {
       recognitionRef.current?.start();
     } else {
@@ -83,7 +86,12 @@ export default function FillerWordCounter() {
     (a, b) => a + b,
     0
   );
-  const words = transcript.split(" ").length;
+  const words = transcript.trim()
+    ? transcript
+        .trim()
+        .split(/\s+/)
+        .filter((word) => word.length > 0).length
+    : 0;
   const fillerPercentage = words > 0 ? (totalFillerWords / words) * 100 : 0;
 
   const handleSave = async () => {
