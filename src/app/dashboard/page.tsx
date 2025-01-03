@@ -23,6 +23,8 @@ import { db, auth } from "@filler-word-counter/lib/firebase/config";
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
+import { cn } from "@filler-word-counter/lib/utils";
+import { Button } from "@filler-word-counter/components/shadcn/button";
 
 interface FillerData {
   actually: number;
@@ -180,13 +182,22 @@ export default function DashboardPage() {
 
       {/* Timeline Section */}
       <div className="max-w-7xl mx-auto">
-        <Card className="hover:shadow-xl transition-all duration-300 mb-12">
+        <Card
+          className={cn(
+            "transition-all duration-300",
+            "hover:shadow-md hover:border-blue-200"
+          )}
+        >
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Your Filler Word Journey</span>
-              <span className="text-sm font-normal text-blue-500 animate-bounce">
-                ↓ Pick a moment in time ↓
-              </span>
+              <Button
+                variant="ghost"
+                className="text-blue-500 animate-bounce cursor-default"
+                disabled
+              >
+                ↓ Click a session to view details ↓
+              </Button>
             </CardTitle>
           </CardHeader>
           <CardContent className="relative">
@@ -210,8 +221,12 @@ export default function DashboardPage() {
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="date" />
-                <YAxis />
+                <YAxis tickFormatter={(value) => `${Math.round(value)}%`} />
                 <Tooltip
+                  formatter={(value: number) => [
+                    `${Math.round(value)}%`,
+                    "Filler Word %",
+                  ]}
                   contentStyle={{
                     backgroundColor: "rgba(255, 255, 255, 0.9)",
                     borderRadius: "8px",
@@ -241,24 +256,33 @@ export default function DashboardPage() {
         </Card>
 
         {/* Distribution Section with Animation */}
-        <div className="relative">
+        <div className="relative mt-8">
           <div className="absolute left-1/2 transform -translate-x-1/2 -top-6 flex flex-col items-center">
             <div className="w-0.5 h-12 bg-gradient-to-b from-blue-200 to-transparent" />
-            <div className="animate-pulse">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="animate-pulse -translate-y-4 cursor-default"
+              disabled
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
                 fill="#93c5fd"
-                className="transform -translate-y-4"
               >
                 <polygon points="12 2 2 12 12 22 22 12" />
               </svg>
-            </div>
+            </Button>
           </div>
 
-          <Card className="bg-white/80 backdrop-blur-sm">
+          <Card
+            className={cn(
+              "bg-white/80 backdrop-blur-sm",
+              "transition-all duration-300"
+            )}
+          >
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Filler Words Breakdown</span>
