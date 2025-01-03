@@ -1,13 +1,6 @@
 "use client";
 
-declare global {
-  interface Window {
-    SpeechRecognition: new () => SpeechRecognition;
-    webkitSpeechRecognition: new () => SpeechRecognition;
-  }
-}
-
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@filler-word-counter/components/shadcn/button";
 import {
   Card,
@@ -28,18 +21,88 @@ interface SpeechRecognition extends EventTarget {
   onresult: (event: any) => void;
 }
 
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
+  }
+}
+
 const FILLER_WORDS = ["like", "actually", "basically", "literally"];
+
+const calculateStats = (
+  transcript: string,
+  fillerCount: Record<string, number>
+) => {
+  const totalFillerWords = Object.values(fillerCount).reduce(
+    (a, b) => a + b,
+    0
+  );
+  const words = transcript.trim()
+    ? transcript
+        .trim()
+        .split(/\s+/)
+        .filter((word) => word.length > 0).length
+    : 0;
+  const fillerPercentage = words > 0 ? (totalFillerWords / words) * 100 : 0;
+
+  return { totalFillerWords, words, fillerPercentage };
+};
+
+const TranscriptCard = ({ transcript }: { transcript: string }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>Transcript</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <p className="text-sm text-muted-foreground">
+        {transcript || "Start speaking to see your transcript..."}
+      </p>
+    </CardContent>
+  </Card>
+);
+
+const FillerWordStats = ({
+  fillerCount,
+}: {
+  fillerCount: Record<string, number>;
+}) => (
+  <div className="mt-4 space-y-2">
+    {FILLER_WORDS.map((word) => (
+      <div key={word} className="flex justify-between items-center">
+        <span className="capitalize">{word}</span>
+        <span className="text-muted-foreground">{fillerCount[word] || 0}</span>
+      </div>
+    ))}
+  </div>
+);
 
 export default function FillerWordCounter() {
   const [isListening, setIsListening] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [fillerCount, setFillerCount] = useState<Record<string, number>>({});
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const [user] = useAuthState(auth);
   const [isSaving, setIsSaving] = useState(false);
   const [sessionId] = useState<string>(new Date().getTime().toString());
-  const [isPaused, setIsPaused] = useState(false);
+
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const pausedTranscriptRef = useRef("");
+  const [user] = useAuthState(auth);
+
+  const countFillerWords = useCallback((text: string) => {
+    const counts: Record<string, number> = {};
+    const words = text
+      .toLowerCase()
+      .trim()
+      .split(/\s+/)
+      .filter((word) => word.length > 0);
+
+    FILLER_WORDS.forEach((fillerWord) => {
+      counts[fillerWord] = words.filter((word) => word === fillerWord).length;
+    });
+
+    setFillerCount(counts);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -54,25 +117,46 @@ export default function FillerWordCounter() {
         for (let i = 0; i < event.results.length; i++) {
           currentTranscript += event.results[i][0].transcript + " ";
         }
-        setTranscript(pausedTranscriptRef.current + currentTranscript);
-        countFillerWords(pausedTranscriptRef.current + currentTranscript);
+        const newTranscript = pausedTranscriptRef.current + currentTranscript;
+        setTranscript(newTranscript);
+        countFillerWords(newTranscript);
       };
     }
-  }, []);
+  }, [countFillerWords]);
 
-  const countFillerWords = (text: string) => {
-    const counts: Record<string, number> = {};
-    const words = text
-      .toLowerCase()
-      .trim()
-      .split(/\s+/)
-      .filter((word) => word.length > 0);
+  const handleSave = async () => {
+    if (!user) return;
 
-    FILLER_WORDS.forEach((fillerWord) => {
-      counts[fillerWord] = words.filter((word) => word === fillerWord).length;
-    });
+    setIsSaving(true);
+    try {
+      const stats = calculateStats(transcript, fillerCount);
+      await setDoc(doc(db, user.uid, sessionId), {
+        userId: user.uid,
+        fillerCount,
+        totalWords: stats.words,
+        totalFillerWords: stats.totalFillerWords,
+        fillerPercentage: stats.fillerPercentage,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Error saving transcript:", error);
+      if (error instanceof Error) {
+        alert(`Failed to save: ${error.message}`);
+      } else {
+        alert("Failed to save transcript. Please try again.");
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-    setFillerCount(counts);
+  const handleReset = () => {
+    recognitionRef.current?.stop();
+    setIsListening(false);
+    setIsPaused(false);
+    setTranscript("");
+    setFillerCount({});
+    pausedTranscriptRef.current = "";
   };
 
   const toggleListening = () => {
@@ -95,42 +179,7 @@ export default function FillerWordCounter() {
     }
   };
 
-  const totalFillerWords = Object.values(fillerCount).reduce(
-    (a, b) => a + b,
-    0
-  );
-  const words = transcript.trim()
-    ? transcript
-        .trim()
-        .split(/\s+/)
-        .filter((word) => word.length > 0).length
-    : 0;
-  const fillerPercentage = words > 0 ? (totalFillerWords / words) * 100 : 0;
-
-  const handleSave = async () => {
-    if (!user) return;
-
-    setIsSaving(true);
-    try {
-      await setDoc(doc(db, user.uid, sessionId), {
-        userId: user.uid,
-        fillerCount,
-        totalWords: words,
-        totalFillerWords,
-        fillerPercentage,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error) {
-      console.error("Error saving transcript:", error);
-      if (error instanceof Error) {
-        alert(`Failed to save: ${error.message}`);
-      } else {
-        alert("Failed to save transcript. Please try again.");
-      }
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  const stats = calculateStats(transcript, fillerCount);
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
@@ -148,17 +197,7 @@ export default function FillerWordCounter() {
             </Button>
 
             {(isListening || transcript) && (
-              <Button
-                onClick={() => {
-                  recognitionRef.current?.stop();
-                  setIsListening(false);
-                  setIsPaused(false);
-                  setTranscript("");
-                  setFillerCount({});
-                  pausedTranscriptRef.current = "";
-                }}
-                variant="outline"
-              >
+              <Button onClick={handleReset} variant="outline">
                 Reset
               </Button>
             )}
@@ -176,35 +215,17 @@ export default function FillerWordCounter() {
 
           <div className="mt-4">
             <p className="text-sm text-muted-foreground mb-2">
-              Filler Words: {totalFillerWords} / {words} words (
-              {fillerPercentage.toFixed(1)}%)
+              Filler Words: {stats.totalFillerWords} / {stats.words} words (
+              {stats.fillerPercentage.toFixed(1)}%)
             </p>
-            <Progress value={fillerPercentage} className="w-full" />
+            <Progress value={stats.fillerPercentage} className="w-full" />
           </div>
 
-          <div className="mt-4 space-y-2">
-            {FILLER_WORDS.map((word) => (
-              <div key={word} className="flex justify-between items-center">
-                <span className="capitalize">{word}</span>
-                <span className="text-muted-foreground">
-                  {fillerCount[word] || 0}
-                </span>
-              </div>
-            ))}
-          </div>
+          <FillerWordStats fillerCount={fillerCount} />
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Transcript</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            {transcript || "Start speaking to see your transcript..."}
-          </p>
-        </CardContent>
-      </Card>
+      <TranscriptCard transcript={transcript} />
     </div>
   );
 }
