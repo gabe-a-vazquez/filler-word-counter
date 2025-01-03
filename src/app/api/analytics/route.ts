@@ -1,6 +1,20 @@
-import { db } from "@filler-word-counter/lib/firebase/config";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { initializeApp, cert, getApps } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
+
+// Initialize Firebase Admin if it hasn't been initialized
+const apps = getApps();
+if (!apps.length) {
+  initializeApp({
+    credential: cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    }),
+  });
+}
+
+const db = getFirestore();
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -11,9 +25,9 @@ export async function GET(request: Request) {
   }
 
   try {
-    const userRef = collection(db, userId);
-    const q = query(userRef, orderBy("timestamp", "asc"));
-    const querySnapshot = await getDocs(q);
+    const userRef = db.collection(userId);
+    const q = userRef.orderBy("timestamp", "asc");
+    const querySnapshot = await q.get();
 
     const timeSeriesData = querySnapshot.docs.map((doc) => {
       const data = doc.data();
