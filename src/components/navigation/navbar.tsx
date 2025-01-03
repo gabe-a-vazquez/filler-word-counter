@@ -20,7 +20,6 @@ export default function Navbar() {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      console.log(user);
       setUser(user);
     });
 
@@ -40,7 +39,7 @@ export default function Navbar() {
   return (
     <nav className="h-16 border-b">
       <div className="h-full mx-auto flex items-center justify-between px-4">
-        <Link href={user ? "/" : "/home"} className="text-xl font-semibold">
+        <Link href={user ? "/" : "/about"} className="text-xl font-semibold">
           Uhm Counter
         </Link>
 
@@ -65,6 +64,11 @@ export default function Navbar() {
                 <DropdownMenuItem>
                   <Link href="/dashboard" className="w-full">
                     Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link href="/about" className="w-full">
+                    About
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>
