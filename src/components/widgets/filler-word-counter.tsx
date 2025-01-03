@@ -13,6 +13,7 @@ import { auth, db } from "@filler-word-counter/lib/firebase/config";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Save, RotateCcw, Pause, Play, Mic } from "lucide-react";
+import { useToast } from "@filler-word-counter/components/shadcn/use-toast";
 
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
@@ -89,6 +90,7 @@ export default function FillerWordCounter() {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const pausedTranscriptRef = useRef("");
   const [user] = useAuthState(auth);
+  const { toast } = useToast();
 
   const countFillerWords = useCallback((text: string) => {
     const counts: Record<string, number> = {};
@@ -139,13 +141,24 @@ export default function FillerWordCounter() {
         fillerPercentage: stats.fillerPercentage,
         timestamp: new Date().toISOString(),
       });
+
+      toast({
+        title: "Session Saved",
+        description: `Successfully saved your speech analysis with ${stats.words} words and ${stats.totalFillerWords} filler words.`,
+        duration: 3000,
+        variant: "success",
+      });
     } catch (error) {
       console.error("Error saving transcript:", error);
-      if (error instanceof Error) {
-        alert(`Failed to save: ${error.message}`);
-      } else {
-        alert("Failed to save transcript. Please try again.");
-      }
+      toast({
+        title: "Save Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to save transcript. Please try again.",
+        variant: "destructive",
+        duration: 5000,
+      });
     } finally {
       setIsSaving(false);
     }

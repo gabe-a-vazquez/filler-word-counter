@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import { cn } from "@filler-word-counter/lib/utils";
 import { ThemeProvider } from "@filler-word-counter/components/ui/theme-provider";
+import { Toaster } from "@filler-word-counter/components/shadcn/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,6 +36,7 @@ export default function RootLayout({
           <Navbar />
           {children}
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );
