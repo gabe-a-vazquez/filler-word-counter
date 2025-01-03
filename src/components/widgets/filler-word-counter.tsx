@@ -12,6 +12,7 @@ import { Progress } from "@filler-word-counter/components/shadcn/progress";
 import { auth, db } from "@filler-word-counter/lib/firebase/config";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { Save, RotateCcw, Pause, Play, Mic } from "lucide-react";
 
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
@@ -192,13 +193,23 @@ export default function FillerWordCounter() {
             <Button
               onClick={toggleListening}
               variant={isListening && !isPaused ? "destructive" : "default"}
+              className="gap-2"
             >
-              {!isListening ? "Start Listening" : isPaused ? "Resume" : "Pause"}
+              {!isListening ? (
+                <>
+                  <Mic className="h-4 w-4" />
+                  <span>Start</span>
+                </>
+              ) : isPaused ? (
+                <Play className="h-4 w-4" />
+              ) : (
+                <Pause className="h-4 w-4" />
+              )}
             </Button>
 
             {(isListening || transcript) && (
-              <Button onClick={handleReset} variant="outline">
-                Reset
+              <Button onClick={handleReset} variant="outline" size="icon">
+                <RotateCcw className="h-4 w-4" />
               </Button>
             )}
 
@@ -207,8 +218,9 @@ export default function FillerWordCounter() {
                 onClick={handleSave}
                 disabled={isSaving}
                 variant="outline"
+                size="icon"
               >
-                {isSaving ? "Saving..." : "Save Transcript"}
+                <Save className="h-4 w-4" />
               </Button>
             )}
           </div>
