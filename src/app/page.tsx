@@ -1,9 +1,13 @@
-import FillerWordCounter from "@filler-word-counter/components/widgets/filler-word-counter";
+import Hero from "@filler-word-counter/components/landing/hero";
+import Features from "@filler-word-counter/components/landing/features";
 
-export default function Page() {
+export default function Home() {
   return (
-    <main className="container mx-auto p-4">
-      <FillerWordCounter />
+    <main className="flex min-h-screen flex-col items-center">
+      <div className="w-full bg-gradient-to-b from-background to-muted">
+        <Hero />
+      </div>
+      <Features />
     </main>
   );
 }

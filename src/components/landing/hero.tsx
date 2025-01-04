@@ -12,7 +12,7 @@ export default function Hero() {
         real-time. Perfect for presentations, interviews, and speeches.
       </p>
       <div className="mt-10 flex gap-4">
-        <Link href="/">
+        <Link href="/counter">
           <Button size="lg" className="text-lg">
             Try for free
           </Button>

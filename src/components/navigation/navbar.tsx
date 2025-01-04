@@ -58,17 +58,14 @@ export default function Navbar() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem className="font-medium">
-                  {user.displayName}
+                <DropdownMenuItem>
+                  <Link href="/counter" className="w-full">
+                    Counter
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Link href="/dashboard" className="w-full">
                     Dashboard
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link href="/about" className="w-full">
-                    About
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>

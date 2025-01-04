@@ -21,8 +21,7 @@ export default function SignUpPage() {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      console.log(result);
-      router.push("/");
+      router.push("/dashboard");
     } catch (err: any) {
       setError("Failed to sign in with Google: " + err.message);
     }
