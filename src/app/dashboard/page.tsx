@@ -25,6 +25,14 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
 import { cn } from "@filler-word-counter/lib/utils";
 import { Button } from "@filler-word-counter/components/shadcn/button";
+import Link from "next/link";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@filler-word-counter/components/shadcn/select";
 
 interface FillerData {
   actually: number;
@@ -65,6 +73,11 @@ interface AggregatedData {
   };
 }
 
+interface SessionOption {
+  label: string;
+  timestamp: string;
+}
+
 export default function DashboardPage() {
   const [fillerData, setFillerData] = useState<FillerData[]>([]);
   const [aggregatedData, setAggregatedData] = useState<AggregatedData | null>(
@@ -73,6 +86,7 @@ export default function DashboardPage() {
   const [selectedTimestamp, setSelectedTimestamp] = useState<string | null>(
     null
   );
+  const [sessionOptions, setSessionOptions] = useState<SessionOption[]>([]);
   const [user] = useAuthState(auth);
 
   useEffect(() => {
@@ -106,6 +120,19 @@ export default function DashboardPage() {
         if (!response.ok) throw new Error("Failed to fetch analytics");
         const aggregatedData = await response.json();
         setAggregatedData(aggregatedData);
+
+        // After setting aggregatedData, create session options
+        if (aggregatedData) {
+          const options = aggregatedData.timeSeriesData.map((data: any) => ({
+            label: format(new Date(data.timestamp), "MMM d, yyyy HH:mm"),
+            timestamp: data.timestamp,
+          }));
+          setSessionOptions(options);
+          // Set the most recent session as default selected
+          if (options.length > 0) {
+            setSelectedTimestamp(options[0].timestamp);
+          }
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -176,6 +203,17 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 p-8">
+      <div className="max-w-7xl mx-auto mb-6">
+        <Link href="/counter">
+          <Button
+            variant="outline"
+            className="mb-4 text-blue-600 border-blue-600 hover:bg-blue-50"
+          >
+            ← Back to Counter
+          </Button>
+        </Link>
+      </div>
+
       <h1 className="text-3xl font-bold mb-8 text-center">
         Analytics Dashboard
       </h1>
@@ -191,13 +229,6 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Your Filler Word Journey</span>
-              <Button
-                variant="ghost"
-                className="text-blue-500 animate-bounce cursor-default"
-                disabled
-              >
-                ↓ Click a session to view details ↓
-              </Button>
             </CardTitle>
           </CardHeader>
           <CardContent className="relative">
@@ -257,26 +288,6 @@ export default function DashboardPage() {
 
         {/* Distribution Section with Animation */}
         <div className="relative mt-8">
-          <div className="absolute left-1/2 transform -translate-x-1/2 -top-6 flex flex-col items-center">
-            <div className="w-0.5 h-12 bg-gradient-to-b from-blue-200 to-transparent" />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="animate-pulse -translate-y-4 cursor-default"
-              disabled
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="#93c5fd"
-              >
-                <polygon points="12 2 2 12 12 22 22 12" />
-              </svg>
-            </Button>
-          </div>
-
           <Card
             className={cn(
               "bg-white/80 backdrop-blur-sm",
@@ -284,23 +295,32 @@ export default function DashboardPage() {
             )}
           >
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Filler Words Breakdown</span>
-                <span className="text-sm font-normal text-gray-600">
-                  {format(
-                    new Date(
-                      selectedTimestamp || latestTimestamp || new Date()
-                    ),
-                    "MMM d, yyyy HH:mm"
-                  )}
-                </span>
+              <CardTitle>
+                <Select
+                  value={selectedTimestamp || ""}
+                  onValueChange={setSelectedTimestamp}
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select session" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sessionOptions.map((option) => (
+                      <SelectItem
+                        key={option.timestamp}
+                        value={option.timestamp}
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={getDistributionData()}>
                   <XAxis dataKey="name" />
-                  <YAxis />
+                  <YAxis allowDecimals={false} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "rgba(255, 255, 255, 0.9)",
