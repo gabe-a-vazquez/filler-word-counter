@@ -39,7 +39,10 @@ export default function Navbar() {
   return (
     <nav className="h-16 border-b">
       <div className="h-full mx-auto flex items-center justify-between px-4">
-        <Link href={user ? "/" : "/about"} className="text-xl font-semibold">
+        <Link
+          href={user ? "/dashboard" : "/"}
+          className="text-xl font-semibold"
+        >
           Uhm Counter
         </Link>
 
