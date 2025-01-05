@@ -123,10 +123,17 @@ export default function DashboardPage() {
 
         // After setting aggregatedData, create session options
         if (aggregatedData) {
-          const options = aggregatedData.timeSeriesData.map((data: any) => ({
-            label: format(new Date(data.timestamp), "MMM d, yyyy HH:mm"),
-            timestamp: data.timestamp,
-          }));
+          const options = aggregatedData.timeSeriesData
+            .map((data: any) => ({
+              label: format(new Date(data.timestamp), "MMM d, yyyy HH:mm"),
+              timestamp: data.timestamp,
+            }))
+            .sort(
+              (a: SessionOption, b: SessionOption) =>
+                new Date(b.timestamp).getTime() -
+                new Date(a.timestamp).getTime()
+            ); // Sort by most recent first
+
           setSessionOptions(options);
           // Set the most recent session as default selected
           if (options.length > 0) {
