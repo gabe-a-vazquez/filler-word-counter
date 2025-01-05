@@ -210,152 +210,185 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 p-8">
-      <div className="max-w-7xl mx-auto mb-6">
-        <Link href="/counter">
-          <Button
-            variant="outline"
-            className="mb-4 text-blue-600 border-blue-600 hover:bg-blue-50"
-          >
-            ← Back to Counter
-          </Button>
-        </Link>
-      </div>
+      {aggregatedData && aggregatedData.timeSeriesData.length > 0 && (
+        <div className="max-w-7xl mx-auto mb-6">
+          <Link href="/counter">
+            <Button
+              variant="outline"
+              className="mb-4 text-blue-600 border-blue-600 hover:bg-blue-50"
+            >
+              ← Back to Counter
+            </Button>
+          </Link>
+        </div>
+      )}
 
       <h1 className="text-3xl font-bold mb-8 text-center">
         Analytics Dashboard
       </h1>
 
-      {/* Timeline Section */}
-      <div className="max-w-7xl mx-auto">
-        <Card
-          className={cn(
-            "transition-all duration-300",
-            "hover:shadow-md hover:border-blue-200"
-          )}
-        >
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Your Filler Word Journey</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="relative">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-50/10 pointer-events-none" />
-            <ResponsiveContainer width="100%" height={350}>
-              <LineChart
-                data={timeSeriesChartData}
-                onClick={handleTimeSeriesClick}
-                className="cursor-pointer"
-              >
-                <defs>
-                  <linearGradient
-                    id="colorPercentage"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0.2} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="date" />
-                <YAxis tickFormatter={(value) => `${Math.round(value)}%`} />
-                <Tooltip
-                  formatter={(value: number) => [
-                    `${Math.round(value)}%`,
-                    "Filler Word %",
-                  ]}
-                  contentStyle={{
-                    backgroundColor: "rgba(255, 255, 255, 0.9)",
-                    borderRadius: "8px",
-                    border: "none",
-                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                  }}
-                />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="percentage"
-                  stroke="#2563eb"
-                  name="Filler Word %"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{
-                    r: 8,
-                    fill: "#2563eb",
-                    stroke: "#fff",
-                    strokeWidth: 2,
-                  }}
-                  fill="url(#colorPercentage)"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Distribution Section with Animation */}
-        <div className="relative mt-8">
-          <Card
-            className={cn(
-              "bg-white/80 backdrop-blur-sm",
-              "transition-all duration-300"
-            )}
-          >
+      {!aggregatedData || aggregatedData.timeSeriesData.length === 0 ? (
+        <div className="max-w-7xl mx-auto">
+          <Card className="bg-white/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>
-                <Select
-                  value={selectedTimestamp || ""}
-                  onValueChange={setSelectedTimestamp}
-                >
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="Select session" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sessionOptions.map((option) => (
-                      <SelectItem
-                        key={option.timestamp}
-                        value={option.timestamp}
-                      >
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </CardTitle>
+              <CardTitle>Welcome to Your Dashboard!</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={getDistributionData()}>
-                  <XAxis dataKey="name" />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "rgba(255, 255, 255, 0.9)",
-                      borderRadius: "8px",
-                      border: "none",
-                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                    }}
-                  />
-                  <Bar
-                    dataKey="value"
-                    fill="#2563eb"
-                    radius={[4, 4, 0, 0]}
-                    className="transition-all duration-300"
-                  >
-                    {/* Add hover animation to bars */}
-                    {getDistributionData().map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        className="hover:brightness-110 cursor-pointer"
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <p className="text-gray-600 mb-4">
+                You haven't recorded any sessions yet. Head over to the counter
+                to start tracking your filler words!
+              </p>
+              <Link href="/counter">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                  Start Your First Session
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
-      </div>
+      ) : (
+        <div className="max-w-7xl mx-auto">
+          {/* Timeline Section */}
+          <div className="max-w-7xl mx-auto">
+            <Card
+              className={cn(
+                "transition-all duration-300",
+                "hover:shadow-md hover:border-blue-200"
+              )}
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Your Filler Word Journey</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="relative">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-blue-50/10 pointer-events-none" />
+                <ResponsiveContainer width="100%" height={350}>
+                  <LineChart
+                    data={timeSeriesChartData}
+                    onClick={handleTimeSeriesClick}
+                    className="cursor-pointer"
+                  >
+                    <defs>
+                      <linearGradient
+                        id="colorPercentage"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#2563eb"
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#2563eb"
+                          stopOpacity={0.2}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="date" />
+                    <YAxis tickFormatter={(value) => `${Math.round(value)}%`} />
+                    <Tooltip
+                      formatter={(value: number) => [
+                        `${Math.round(value)}%`,
+                        "Filler Word %",
+                      ]}
+                      contentStyle={{
+                        backgroundColor: "rgba(255, 255, 255, 0.9)",
+                        borderRadius: "8px",
+                        border: "none",
+                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                      }}
+                    />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="percentage"
+                      stroke="#2563eb"
+                      name="Filler Word %"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{
+                        r: 8,
+                        fill: "#2563eb",
+                        stroke: "#fff",
+                        strokeWidth: 2,
+                      }}
+                      fill="url(#colorPercentage)"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Distribution Section with Animation */}
+            <div className="relative mt-8">
+              <Card
+                className={cn(
+                  "bg-white/80 backdrop-blur-sm",
+                  "transition-all duration-300"
+                )}
+              >
+                <CardHeader>
+                  <CardTitle>
+                    <Select
+                      value={selectedTimestamp || ""}
+                      onValueChange={setSelectedTimestamp}
+                    >
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Select session" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sessionOptions.map((option) => (
+                          <SelectItem
+                            key={option.timestamp}
+                            value={option.timestamp}
+                          >
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={getDistributionData()}>
+                      <XAxis dataKey="name" />
+                      <YAxis allowDecimals={false} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "rgba(255, 255, 255, 0.9)",
+                          borderRadius: "8px",
+                          border: "none",
+                          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                        }}
+                      />
+                      <Bar
+                        dataKey="value"
+                        fill="#2563eb"
+                        radius={[4, 4, 0, 0]}
+                        className="transition-all duration-300"
+                      >
+                        {/* Add hover animation to bars */}
+                        {getDistributionData().map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            className="hover:brightness-110 cursor-pointer"
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
