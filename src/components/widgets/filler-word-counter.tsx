@@ -88,6 +88,8 @@ export default function FillerWordCounter() {
   const [isSaving, setIsSaving] = useState(false);
   const [sessionId] = useState<string>(new Date().getTime().toString());
   const [showGuestCard, setShowGuestCard] = useState(true);
+  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const pausedTranscriptRef = useRef("");
@@ -129,6 +131,30 @@ export default function FillerWordCounter() {
     }
   }, [countFillerWords]);
 
+  useEffect(() => {
+    if (transcript || Object.keys(fillerCount).length > 0) {
+      setHasUnsavedChanges(true);
+    }
+  }, [transcript, fillerCount]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        // @ts-ignore -- returnValue is deprecated but still widely supported
+        e.returnValue =
+          "You have unsaved changes. Are you sure you want to leave?";
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
   const handleSave = async () => {
     if (!user) return;
 
@@ -143,6 +169,9 @@ export default function FillerWordCounter() {
         fillerPercentage: stats.fillerPercentage,
         timestamp: new Date().toISOString(),
       });
+
+      setLastSaveTime(new Date());
+      setHasUnsavedChanges(false);
 
       toast({
         title: "Session Saved",
@@ -182,6 +211,8 @@ export default function FillerWordCounter() {
     setIsPaused(false);
     setTranscript("");
     setFillerCount({});
+    setHasUnsavedChanges(false);
+    setLastSaveTime(null);
     pausedTranscriptRef.current = "";
   };
 
@@ -268,14 +299,23 @@ export default function FillerWordCounter() {
             )}
 
             {user && transcript && (
-              <Button
-                onClick={handleSave}
-                disabled={isSaving}
-                variant="outline"
-                size="icon"
-              >
-                <Save className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleSave}
+                  disabled={isSaving || !hasUnsavedChanges}
+                  variant="outline"
+                  size="icon"
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  {hasUnsavedChanges
+                    ? "Unsaved changes"
+                    : lastSaveTime
+                    ? `Saved ${lastSaveTime.toLocaleTimeString()}`
+                    : null}
+                </span>
+              </div>
             )}
           </div>
 
