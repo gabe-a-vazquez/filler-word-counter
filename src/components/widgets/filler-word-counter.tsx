@@ -12,7 +12,7 @@ import { Progress } from "@filler-word-counter/components/shadcn/progress";
 import { auth, db } from "@filler-word-counter/lib/firebase/config";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { Save, RotateCcw, Pause, Play, Mic } from "lucide-react";
+import { Save, RotateCcw, Pause, Play, Mic, X } from "lucide-react";
 import { useToast } from "@filler-word-counter/components/shadcn/use-toast";
 import Link from "next/link";
 
@@ -87,6 +87,7 @@ export default function FillerWordCounter() {
   const [fillerCount, setFillerCount] = useState<Record<string, number>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [sessionId] = useState<string>(new Date().getTime().toString());
+  const [showGuestCard, setShowGuestCard] = useState(true);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const pausedTranscriptRef = useRef("");
@@ -212,6 +213,35 @@ export default function FillerWordCounter() {
         <CardHeader>
           <CardTitle>Speech Analysis</CardTitle>
         </CardHeader>
+        {!user && showGuestCard && (
+          <CardContent className="border mt-4 mb-10 ml-4 mr-4 p-4 rounded-lg bg-muted">
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                {/* <p className="text-sm font-medium">Guest Mode</p> */}
+                <p className="text-sm text-muted-foreground">
+                  You're currently using the app as a guest. Sign up for free to
+                  save your results and track your progress over time.
+                </p>
+                <div className="pt-2">
+                  <Link
+                    href="/signup"
+                    className="text-sm font-medium text-blue-500 hover:text-blue-600 hover:underline"
+                  >
+                    Create an account →
+                  </Link>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-4 w-8"
+                onClick={() => setShowGuestCard(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        )}
         <CardContent>
           <div className="flex gap-2">
             <Button
