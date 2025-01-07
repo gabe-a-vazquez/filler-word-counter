@@ -247,8 +247,7 @@ export default function FillerWordCounter() {
           const newTranscript = data.channel?.alternatives[0]?.transcript || "";
           if (newTranscript) {
             const updatedTranscript = transcript + " " + newTranscript;
-            setTranscript(updatedTranscript);
-            setFillerCount(countFillerWords(updatedTranscript));
+            handleTranscriptUpdate(updatedTranscript);
           }
         }
       };
@@ -267,6 +266,7 @@ export default function FillerWordCounter() {
     startMicrophone,
     user,
     transcript,
+    handleTranscriptUpdate,
   ]);
 
   const stats = calculateStats(transcript, fillerCount);

@@ -1,4 +1,11 @@
-export const FILLER_WORDS = ["like", "actually", "basically", "literally"];
+export const FILLER_WORDS = [
+  "uh",
+  "um",
+  "like",
+  "actually",
+  "basically",
+  "literally",
+];
 
 export const calculateStats = (
   transcript: string,
@@ -22,15 +29,37 @@ export const calculateStats = (
 
 export const countFillerWords = (text: string): Record<string, number> => {
   const counts: Record<string, number> = {};
-  const words = text
+  const cleanText = text
     .toLowerCase()
-    .trim()
-    .split(/\s+/)
-    .filter((word) => word.length > 0);
+    .replace(/[.,!?]/g, "") // Remove punctuation
+    .trim();
 
-  FILLER_WORDS.forEach((fillerWord) => {
-    counts[fillerWord] = words.filter((word) => word === fillerWord).length;
+  // Initialize counts
+  FILLER_WORDS.forEach((word) => {
+    counts[word] = 0;
   });
 
-  return counts;
+  // Count single-word fillers
+  const words = cleanText.split(/\s+/).filter((word) => word.length > 0);
+  const singleWordFillers = FILLER_WORDS.filter((w) => !w.includes(" "));
+  words.forEach((word) => {
+    singleWordFillers.forEach((filler) => {
+      if (word === filler) counts[filler]++;
+    });
+  });
+
+  // Count multi-word fillers
+  const multiWordFillers = FILLER_WORDS.filter((w) => w.includes(" "));
+  multiWordFillers.forEach((filler) => {
+    const regex = new RegExp(`\\b${filler}\\b`, "gi");
+    const matches = cleanText.match(regex);
+    if (matches) {
+      counts[filler] = matches.length;
+    }
+  });
+
+  // Remove fillers with zero count
+  return Object.fromEntries(
+    Object.entries(counts).filter(([_, count]) => count > 0)
+  );
 };
