@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@filler-word-counter/components/shadcn/button";
 import {
   Card,
@@ -8,19 +8,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@filler-word-counter/components/shadcn/card";
-import { Progress } from "@filler-word-counter/components/shadcn/progress";
 import { auth, db } from "@filler-word-counter/lib/firebase/config";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { Save, RotateCcw, Pause, Play, Mic, X } from "lucide-react";
+import { Save, RotateCcw, Pause, Play, Mic } from "lucide-react";
 import { useToast } from "@filler-word-counter/components/shadcn/use-toast";
 import Link from "next/link";
 import {
   LiveConnectionState,
   LiveTranscriptionEvent,
   useDeepgram,
-} from "@filler-word-counter/context/DeepgramContextProvider";
-import { useMicrophone } from "@filler-word-counter/context/MicrophoneContextProvider";
+} from "@filler-word-counter/context/deepgram-context-provider";
+import { useMicrophone } from "@filler-word-counter/context/microphone-context-provider";
+import {
+  calculateStats,
+  countFillerWords,
+} from "@filler-word-counter/lib/speech-utils";
+import { TranscriptCard } from "./transcript-card";
+import { FillerWordStats } from "./filler-word-stats";
+import { GuestNotice } from "./guest-notice";
 
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
@@ -36,55 +42,6 @@ declare global {
     webkitSpeechRecognition: new () => SpeechRecognition;
   }
 }
-
-const FILLER_WORDS = ["like", "actually", "basically", "literally"];
-
-const calculateStats = (
-  transcript: string,
-  fillerCount: Record<string, number>
-) => {
-  const totalFillerWords = Object.values(fillerCount).reduce(
-    (a, b) => a + b,
-    0
-  );
-  const words = transcript.trim()
-    ? transcript
-        .trim()
-        .split(/\s+/)
-        .filter((word) => word.length > 0).length
-    : 0;
-  const fillerPercentage = words > 0 ? (totalFillerWords / words) * 100 : 0;
-
-  return { totalFillerWords, words, fillerPercentage };
-};
-
-const TranscriptCard = ({ transcript }: { transcript: string }) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>Transcript</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <p className="text-sm text-muted-foreground">
-        {transcript || "Start speaking to see your transcript..."}
-      </p>
-    </CardContent>
-  </Card>
-);
-
-const FillerWordStats = ({
-  fillerCount,
-}: {
-  fillerCount: Record<string, number>;
-}) => (
-  <div className="mt-4 space-y-2">
-    {FILLER_WORDS.map((word) => (
-      <div key={word} className="flex justify-between items-center">
-        <span className="capitalize">{word}</span>
-        <span className="text-muted-foreground">{fillerCount[word] || 0}</span>
-      </div>
-    ))}
-  </div>
-);
 
 export default function FillerWordCounter() {
   const [isListening, setIsListening] = useState(false);
@@ -105,20 +62,10 @@ export default function FillerWordCounter() {
   const { setupMicrophone, microphone, startMicrophone, microphoneState } =
     useMicrophone();
 
-  const countFillerWords = useCallback((text: string) => {
-    const counts: Record<string, number> = {};
-    const words = text
-      .toLowerCase()
-      .trim()
-      .split(/\s+/)
-      .filter((word) => word.length > 0);
-
-    FILLER_WORDS.forEach((fillerWord) => {
-      counts[fillerWord] = words.filter((word) => word === fillerWord).length;
-    });
-
-    setFillerCount(counts);
-  }, []);
+  const handleTranscriptUpdate = (newTranscript: string) => {
+    setTranscript(newTranscript);
+    setFillerCount(countFillerWords(newTranscript));
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -135,10 +82,10 @@ export default function FillerWordCounter() {
         }
         const newTranscript = pausedTranscriptRef.current + currentTranscript;
         setTranscript(newTranscript);
-        countFillerWords(newTranscript);
+        handleTranscriptUpdate(newTranscript);
       };
     }
-  }, [countFillerWords]);
+  }, [handleTranscriptUpdate]);
 
   useEffect(() => {
     if (transcript || Object.keys(fillerCount).length > 0) {
@@ -173,7 +120,7 @@ export default function FillerWordCounter() {
       await setDoc(doc(db, user.uid, sessionId), {
         userId: user.uid,
         fillerCount,
-        totalWords: stats.words,
+        totalWords: stats.totalWords,
         totalFillerWords: stats.totalFillerWords,
         fillerPercentage: stats.fillerPercentage,
         timestamp: new Date().toISOString(),
@@ -187,8 +134,8 @@ export default function FillerWordCounter() {
         description: (
           <div className="flex flex-col gap-2">
             <p>
-              Successfully saved your speech analysis with {stats.words} words
-              and {stats.totalFillerWords} filler words.
+              Successfully saved your speech analysis with {stats.totalWords}{" "}
+              words and {stats.totalFillerWords} filler words.
             </p>
             <Link href="/dashboard" className="text-primary hover:underline">
               View your results in the dashboard →
@@ -299,8 +246,9 @@ export default function FillerWordCounter() {
         if (data.is_final) {
           const newTranscript = data.channel?.alternatives[0]?.transcript || "";
           if (newTranscript) {
-            setTranscript((prev) => prev + " " + newTranscript);
-            countFillerWords(newTranscript);
+            const updatedTranscript = transcript + " " + newTranscript;
+            setTranscript(updatedTranscript);
+            setFillerCount(countFillerWords(updatedTranscript));
           }
         }
       };
@@ -312,7 +260,14 @@ export default function FillerWordCounter() {
       if (connection) connection.onmessage = null;
       microphone.removeEventListener("dataavailable", onData);
     };
-  }, [connectionState, connection, microphone, startMicrophone, user]);
+  }, [
+    connectionState,
+    connection,
+    microphone,
+    startMicrophone,
+    user,
+    transcript,
+  ]);
 
   const stats = calculateStats(transcript, fillerCount);
 
@@ -322,35 +277,11 @@ export default function FillerWordCounter() {
         <CardHeader>
           <CardTitle>Speech Analysis</CardTitle>
         </CardHeader>
+
         {!user && showGuestCard && (
-          <CardContent className="border mt-4 mb-10 ml-4 mr-4 p-4 rounded-lg bg-muted">
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                {/* <p className="text-sm font-medium">Guest Mode</p> */}
-                <p className="text-sm text-muted-foreground">
-                  You're currently using the app as a guest. Sign up for free to
-                  save your results and track your progress over time.
-                </p>
-                <div className="pt-2">
-                  <Link
-                    href="/signup"
-                    className="text-sm font-medium text-blue-500 hover:text-blue-600 hover:underline"
-                  >
-                    Create an account →
-                  </Link>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-4 w-8"
-                onClick={() => setShowGuestCard(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardContent>
+          <GuestNotice onDismiss={() => setShowGuestCard(false)} />
         )}
+
         <CardContent>
           <div className="flex gap-2">
             <Button
@@ -397,15 +328,7 @@ export default function FillerWordCounter() {
             )}
           </div>
 
-          <div className="mt-4">
-            <p className="text-sm text-muted-foreground mb-2">
-              Filler Words: {stats.totalFillerWords} / {stats.words} words (
-              {stats.fillerPercentage.toFixed(1)}%)
-            </p>
-            <Progress value={stats.fillerPercentage} className="w-full" />
-          </div>
-
-          <FillerWordStats fillerCount={fillerCount} />
+          <FillerWordStats fillerCount={fillerCount} {...stats} />
         </CardContent>
       </Card>
 
