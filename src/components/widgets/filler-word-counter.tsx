@@ -193,13 +193,15 @@ export default function FillerWordCounter() {
         });
       } else {
         if (isPaused) {
-          connectToDeepgram({
-            model: "nova-2",
-            interim_results: true,
-            smart_format: true,
-            filler_words: true,
+          setupMicrophone().then(() => {
+            connectToDeepgram({
+              model: "nova-2",
+              interim_results: true,
+              smart_format: true,
+              filler_words: true,
+            });
+            setIsPaused(false);
           });
-          setIsPaused(false);
         } else {
           if (connection) {
             connection.close();
@@ -246,7 +248,8 @@ export default function FillerWordCounter() {
         if (data.is_final) {
           const newTranscript = data.channel?.alternatives[0]?.transcript || "";
           if (newTranscript) {
-            const updatedTranscript = transcript + " " + newTranscript;
+            const updatedTranscript =
+              transcript + (transcript ? " " : "") + newTranscript;
             handleTranscriptUpdate(updatedTranscript);
           }
         }
@@ -257,7 +260,7 @@ export default function FillerWordCounter() {
 
     return () => {
       if (connection) connection.onmessage = null;
-      microphone.removeEventListener("dataavailable", onData);
+      if (microphone) microphone.removeEventListener("dataavailable", onData);
     };
   }, [
     connectionState,
