@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@filler-word-counter/components/shadcn/select";
+import { Loader2 } from "lucide-react";
 
 interface FillerData {
   uh: number;
@@ -84,6 +85,8 @@ interface SessionOption {
   timestamp: string;
 }
 
+const loadingWords = ["um", "uh", "like", "actually", "basically", "literally"];
+
 export default function DashboardPage() {
   const [fillerData, setFillerData] = useState<FillerData[]>([]);
   const [aggregatedData, setAggregatedData] = useState<AggregatedData | null>(
@@ -94,12 +97,15 @@ export default function DashboardPage() {
   );
   const [sessionOptions, setSessionOptions] = useState<SessionOption[]>([]);
   const [user] = useAuthState(auth);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
 
       try {
+        setIsLoading(true);
+
         // Get user's collection
         const userRef = collection(db, user.uid);
         const q = query(userRef, orderBy("timestamp", "desc"), limit(10));
@@ -146,8 +152,11 @@ export default function DashboardPage() {
             setSelectedTimestamp(options[0].timestamp);
           }
         }
+
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setIsLoading(false);
       }
     };
 
@@ -165,15 +174,6 @@ export default function DashboardPage() {
     totalFillerWords: 0,
     totalWords: 0,
   };
-
-  const fillerWordsData = [
-    { name: "Uh", value: latestData.uh },
-    { name: "Um", value: latestData.um },
-    { name: "Actually", value: latestData.actually },
-    { name: "Basically", value: latestData.basically },
-    { name: "Like", value: latestData.like },
-    { name: "Literally", value: latestData.literally },
-  ];
 
   // Format time series data for the chart
   const timeSeriesChartData =
@@ -241,7 +241,34 @@ export default function DashboardPage() {
         Analytics Dashboard
       </h1>
 
-      {!aggregatedData || aggregatedData.timeSeriesData.length === 0 ? (
+      {isLoading ? (
+        <div className="flex flex-col justify-center items-center h-[60vh] gap-4 relative">
+          {/* Animated filler words */}
+          {loadingWords.map((word, index) => (
+            <div
+              key={word}
+              className="absolute animate-pulse opacity-20 text-blue-600"
+              style={{
+                animation: `pulse 2s infinite, float 3s infinite`,
+                animationDelay: `${index * 0.5}s`,
+                transform: `rotate(${index * 60}deg) translateY(-100px)`,
+              }}
+            >
+              {word}
+            </div>
+          ))}
+
+          {/* Center spinner with pulse effect */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-blue-600/20 rounded-full animate-ping" />
+            <Loader2 className="h-16 w-16 animate-spin text-blue-600 relative" />
+          </div>
+
+          <p className="text-blue-600 text-lg font-medium animate-pulse">
+            Analyzing your filler words...
+          </p>
+        </div>
+      ) : !aggregatedData || aggregatedData.timeSeriesData.length === 0 ? (
         <div className="max-w-7xl mx-auto">
           <Card className="bg-white/80 backdrop-blur-sm">
             <CardHeader>
