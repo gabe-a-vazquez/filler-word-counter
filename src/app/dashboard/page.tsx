@@ -35,6 +35,8 @@ import {
 } from "@filler-word-counter/components/shadcn/select";
 
 interface FillerData {
+  uh: number;
+  um: number;
   actually: number;
   basically: number;
   like: number;
@@ -49,6 +51,8 @@ interface TimeSeriesData {
   timestamp: string;
   fillerPercentage: number;
   fillerCount: {
+    uh: number;
+    um: number;
     actually: number;
     basically: number;
     like: number;
@@ -65,6 +69,8 @@ interface AggregatedData {
     totalWords: number;
     totalFillerWords: number;
     fillerCount: {
+      uh: number;
+      um: number;
       actually: number;
       basically: number;
       like: number;
@@ -149,6 +155,8 @@ export default function DashboardPage() {
   }, [user]);
 
   const latestData = fillerData[0] || {
+    uh: 0,
+    um: 0,
     actually: 0,
     basically: 0,
     like: 0,
@@ -159,6 +167,8 @@ export default function DashboardPage() {
   };
 
   const fillerWordsData = [
+    { name: "Uh", value: latestData.uh },
+    { name: "Um", value: latestData.um },
     { name: "Actually", value: latestData.actually },
     { name: "Basically", value: latestData.basically },
     { name: "Like", value: latestData.like },
@@ -181,6 +191,8 @@ export default function DashboardPage() {
       );
       if (selectedData) {
         return [
+          { name: "Uh", value: selectedData.fillerCount.uh },
+          { name: "Um", value: selectedData.fillerCount.um },
           { name: "Actually", value: selectedData.fillerCount.actually },
           { name: "Basically", value: selectedData.fillerCount.basically },
           { name: "Like", value: selectedData.fillerCount.like },
@@ -190,6 +202,8 @@ export default function DashboardPage() {
     }
     // Fall back to latest data if no selection
     return [
+      { name: "Uh", value: latestData.uh },
+      { name: "Um", value: latestData.um },
       { name: "Actually", value: latestData.actually },
       { name: "Basically", value: latestData.basically },
       { name: "Like", value: latestData.like },

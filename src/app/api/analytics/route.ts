@@ -39,6 +39,8 @@ export async function GET(request: Request) {
           basically: data.fillerCount?.basically || 0,
           like: data.fillerCount?.like || 0,
           literally: data.fillerCount?.literally || 0,
+          uh: data.fillerCount?.uh || 0,
+          um: data.fillerCount?.um || 0,
         },
         totalWords: data.totalWords || 0,
         totalFillerWords: data.totalFillerWords || 0,
@@ -59,13 +61,22 @@ export async function GET(request: Request) {
               basically: acc.fillerCount.basically + curr.fillerCount.basically,
               like: acc.fillerCount.like + curr.fillerCount.like,
               literally: acc.fillerCount.literally + curr.fillerCount.literally,
+              uh: acc.fillerCount.uh + curr.fillerCount.uh,
+              um: acc.fillerCount.um + curr.fillerCount.um,
             },
           };
         },
         {
           totalWords: 0,
           totalFillerWords: 0,
-          fillerCount: { actually: 0, basically: 0, like: 0, literally: 0 },
+          fillerCount: {
+            actually: 0,
+            basically: 0,
+            like: 0,
+            literally: 0,
+            uh: 0,
+            um: 0,
+          },
         }
       ),
     };
