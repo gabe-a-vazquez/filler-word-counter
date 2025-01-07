@@ -2,6 +2,8 @@ import { Inter } from "next/font/google";
 import { cn } from "@filler-word-counter/lib/utils";
 import { ThemeProvider } from "@filler-word-counter/components/ui/theme-provider";
 import { Toaster } from "@filler-word-counter/components/shadcn/toaster";
+import { DeepgramProvider } from "@filler-word-counter/context/DeepgramContextProvider";
+import { MicrophoneProvider } from "@filler-word-counter/context/MicrophoneContextProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,15 +29,19 @@ export default function RootLayout({
           inter.className
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Navbar />
-          {children}
-        </ThemeProvider>
+        <DeepgramProvider>
+          <MicrophoneProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <Navbar />
+              {children}
+            </ThemeProvider>
+          </MicrophoneProvider>
+        </DeepgramProvider>
         <Toaster />
       </body>
     </html>

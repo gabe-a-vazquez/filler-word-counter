@@ -15,6 +15,12 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { Save, RotateCcw, Pause, Play, Mic, X } from "lucide-react";
 import { useToast } from "@filler-word-counter/components/shadcn/use-toast";
 import Link from "next/link";
+import {
+  LiveConnectionState,
+  LiveTranscriptionEvent,
+  useDeepgram,
+} from "@filler-word-counter/context/DeepgramContextProvider";
+import { useMicrophone } from "@filler-word-counter/context/MicrophoneContextProvider";
 
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
@@ -95,6 +101,9 @@ export default function FillerWordCounter() {
   const pausedTranscriptRef = useRef("");
   const [user] = useAuthState(auth);
   const { toast } = useToast();
+  const { connection, connectToDeepgram, connectionState } = useDeepgram();
+  const { setupMicrophone, microphone, startMicrophone, microphoneState } =
+    useMicrophone();
 
   const countFillerWords = useCallback((text: string) => {
     const counts: Record<string, number> = {};
@@ -206,7 +215,13 @@ export default function FillerWordCounter() {
   };
 
   const handleReset = () => {
-    recognitionRef.current?.stop();
+    if (user) {
+      if (connection) {
+        connection.close();
+      }
+    } else {
+      recognitionRef.current?.stop();
+    }
     setIsListening(false);
     setIsPaused(false);
     setTranscript("");
@@ -217,24 +232,87 @@ export default function FillerWordCounter() {
   };
 
   const toggleListening = () => {
-    if (!recognitionRef.current) return;
-
-    if (!isListening) {
-      recognitionRef.current.start();
-      setIsListening(true);
-      setIsPaused(false);
+    if (user) {
+      if (!isListening) {
+        setupMicrophone().then(() => {
+          connectToDeepgram({
+            model: "nova-2",
+            interim_results: true,
+            smart_format: true,
+            filler_words: true,
+          });
+          setIsListening(true);
+          setIsPaused(false);
+        });
+      } else {
+        if (isPaused) {
+          connectToDeepgram({
+            model: "nova-2",
+            interim_results: true,
+            smart_format: true,
+            filler_words: true,
+          });
+          setIsPaused(false);
+        } else {
+          if (connection) {
+            connection.close();
+            if (microphone) {
+              microphone.stop();
+              microphone.stream.getTracks().forEach((track) => track.stop());
+            }
+          }
+          setIsPaused(true);
+        }
+      }
     } else {
-      if (isPaused) {
-        pausedTranscriptRef.current = transcript;
+      if (!recognitionRef.current) return;
+      if (!isListening) {
         recognitionRef.current.start();
+        setIsListening(true);
         setIsPaused(false);
       } else {
-        pausedTranscriptRef.current = transcript;
-        recognitionRef.current.stop();
-        setIsPaused(true);
+        if (isPaused) {
+          pausedTranscriptRef.current = transcript;
+          recognitionRef.current.start();
+          setIsPaused(false);
+        } else {
+          pausedTranscriptRef.current = transcript;
+          recognitionRef.current.stop();
+          setIsPaused(true);
+        }
       }
     }
   };
+
+  useEffect(() => {
+    if (!user || !microphone || !connection) return;
+
+    const onData = (e: BlobEvent) => {
+      if (e.data.size > 0 && connection.readyState === WebSocket.OPEN) {
+        connection.send(e.data);
+      }
+    };
+
+    if (connectionState === LiveConnectionState.OPEN) {
+      connection.onmessage = (event) => {
+        const data = JSON.parse(event.data) as LiveTranscriptionEvent;
+        if (data.is_final) {
+          const newTranscript = data.channel?.alternatives[0]?.transcript || "";
+          if (newTranscript) {
+            setTranscript((prev) => prev + " " + newTranscript);
+            countFillerWords(newTranscript);
+          }
+        }
+      };
+      microphone.addEventListener("dataavailable", onData);
+      startMicrophone();
+    }
+
+    return () => {
+      if (connection) connection.onmessage = null;
+      microphone.removeEventListener("dataavailable", onData);
+    };
+  }, [connectionState, connection, microphone, startMicrophone, user]);
 
   const stats = calculateStats(transcript, fillerCount);
 
