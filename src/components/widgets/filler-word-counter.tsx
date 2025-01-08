@@ -65,7 +65,7 @@ export default function FillerWordCounter() {
 
   const handleTranscriptUpdate = (newTranscript: string) => {
     setTranscript(newTranscript);
-    setFillerCount(countFillerWords(newTranscript));
+    setFillerCount(countFillerWords(newTranscript, isVipUser));
   };
 
   useEffect(() => {
@@ -205,16 +205,6 @@ export default function FillerWordCounter() {
 
   const toggleListening = () => {
     if (isVipUser) {
-      // if (!isVipUser) {
-      //   toast({
-      //     title: "Premium Feature",
-      //     description:
-      //       "Enhanced speech recognition is only available to premium users.",
-      //     variant: "destructive",
-      //   });
-      //   return;
-      // }
-
       if (!isListening) {
         setupMicrophone().then(() => {
           connectToDeepgram({
@@ -367,7 +357,11 @@ export default function FillerWordCounter() {
             )}
           </div>
 
-          <FillerWordStats fillerCount={fillerCount} {...stats} />
+          <FillerWordStats
+            fillerCount={fillerCount}
+            {...stats}
+            isVipUser={isVipUser}
+          />
         </CardContent>
       </Card>
 

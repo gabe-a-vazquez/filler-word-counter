@@ -1,11 +1,25 @@
-export const FILLER_WORDS = [
-  "uh",
-  "um",
+export const BASIC_FILLER_WORDS = [
   "like",
-  "actually",
+  // "you know",
+  // "kind of",
+  // "sort of",
   "basically",
   "literally",
-];
+  "actually",
+  // "seriously",
+  // "totally",
+  // "whatever",
+  // "anyway",
+  // "well",
+  // "so",
+  // "right",
+] as const;
+
+export const PREMIUM_FILLER_WORDS = [
+  "uh",
+  "um",
+  ...BASIC_FILLER_WORDS,
+] as const;
 
 export const calculateStats = (
   transcript: string,
@@ -27,39 +41,19 @@ export const calculateStats = (
   return { totalFillerWords, totalWords, fillerPercentage };
 };
 
-export const countFillerWords = (text: string): Record<string, number> => {
-  const counts: Record<string, number> = {};
-  const cleanText = text
-    .toLowerCase()
-    .replace(/[.,!?]/g, "") // Remove punctuation
-    .trim();
+export const countFillerWords = (
+  transcript: string,
+  isPremium: boolean = false
+): Record<string, number> => {
+  const fillerWords = isPremium ? PREMIUM_FILLER_WORDS : BASIC_FILLER_WORDS;
+  const words = transcript.toLowerCase();
 
-  // Initialize counts
-  FILLER_WORDS.forEach((word) => {
-    counts[word] = 0;
-  });
-
-  // Count single-word fillers
-  const words = cleanText.split(/\s+/).filter((word) => word.length > 0);
-  const singleWordFillers = FILLER_WORDS.filter((w) => !w.includes(" "));
-  words.forEach((word) => {
-    singleWordFillers.forEach((filler) => {
-      if (word === filler) counts[filler]++;
-    });
-  });
-
-  // Count multi-word fillers
-  const multiWordFillers = FILLER_WORDS.filter((w) => w.includes(" "));
-  multiWordFillers.forEach((filler) => {
-    const regex = new RegExp(`\\b${filler}\\b`, "gi");
-    const matches = cleanText.match(regex);
-    if (matches) {
-      counts[filler] = matches.length;
+  return fillerWords.reduce((acc, word) => {
+    const regex = new RegExp(`\\b${word}\\b`, "gi");
+    const count = (words.match(regex) || []).length;
+    if (count > 0) {
+      acc[word] = count;
     }
-  });
-
-  // Remove fillers with zero count
-  return Object.fromEntries(
-    Object.entries(counts).filter(([_, count]) => count > 0)
-  );
+    return acc;
+  }, {} as Record<string, number>);
 };

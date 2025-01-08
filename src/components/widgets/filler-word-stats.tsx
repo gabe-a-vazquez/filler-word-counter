@@ -1,11 +1,15 @@
+import {
+  BASIC_FILLER_WORDS,
+  PREMIUM_FILLER_WORDS,
+} from "@filler-word-counter/lib/speech-utils";
 import { Progress } from "@filler-word-counter/components/shadcn/progress";
-import { FILLER_WORDS } from "@filler-word-counter/lib/speech-utils";
 
 interface FillerWordStatsProps {
   fillerCount: Record<string, number>;
   totalWords: number;
   totalFillerWords: number;
   fillerPercentage: number;
+  isVipUser: boolean;
 }
 
 export function FillerWordStats({
@@ -13,9 +17,13 @@ export function FillerWordStats({
   totalWords,
   totalFillerWords,
   fillerPercentage,
+  isVipUser,
 }: FillerWordStatsProps) {
+  const fillerWords = isVipUser ? PREMIUM_FILLER_WORDS : BASIC_FILLER_WORDS;
+  const maxCount = Math.max(...Object.values(fillerCount), 1);
+
   return (
-    <>
+    <div className="space-y-4 mt-4">
       <div className="mt-4">
         <p className="text-sm text-muted-foreground mb-2">
           Filler Words: {totalFillerWords} / {totalWords} words (
@@ -24,16 +32,20 @@ export function FillerWordStats({
         <Progress value={fillerPercentage} className="w-full" />
       </div>
 
-      <div className="mt-4 space-y-2">
-        {FILLER_WORDS.map((word) => (
-          <div key={word} className="flex justify-between items-center">
-            <span className="capitalize">{word}</span>
-            <span className="text-muted-foreground">
-              {fillerCount[word] || 0}
-            </span>
-          </div>
-        ))}
+      <div className="space-y-2">
+        <div className="grid gap-1.5">
+          {fillerWords.map((word) => {
+            return (
+              <div key={word} className="flex justify-between items-center">
+                <span className="capitalize">{word}</span>
+                <span className="text-muted-foreground">
+                  {fillerCount[word] || 0}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </>
+    </div>
   );
 }
