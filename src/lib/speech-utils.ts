@@ -1,18 +1,9 @@
 export const BASIC_FILLER_WORDS = [
   "like",
-  // "you know",
-  // "kind of",
-  // "sort of",
   "basically",
   "literally",
   "actually",
-  // "seriously",
-  // "totally",
-  // "whatever",
-  // "anyway",
-  // "well",
-  // "so",
-  // "right",
+  "so",
 ] as const;
 
 export const PREMIUM_FILLER_WORDS = [

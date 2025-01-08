@@ -1,5 +1,5 @@
-import { Button } from "@filler-word-counter/components/shadcn/button";
-import Link from "next/link";
+// This remains a server component
+import { HeroButtons } from "./hero-buttons";
 
 export default function Hero() {
   return (
@@ -11,18 +11,7 @@ export default function Hero() {
         Improve your public speaking by tracking and reducing filler words in
         real-time. Perfect for presentations, interviews, and speeches.
       </p>
-      <div className="mt-10 flex gap-4">
-        <Link href="/counter">
-          <Button size="lg" className="text-lg">
-            Try for free
-          </Button>
-        </Link>
-        <Link href="/signup">
-          <Button size="lg" variant="outline" className="text-lg">
-            Sign up
-          </Button>
-        </Link>
-      </div>
+      <HeroButtons />
     </div>
   );
 }
