@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@filler-word-counter/components/shadcn/card";
 import { auth, db } from "@filler-word-counter/lib/firebase/config";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Save, RotateCcw, Pause, Play, Mic } from "lucide-react";
 import { useToast } from "@filler-word-counter/components/shadcn/use-toast";
@@ -53,6 +53,7 @@ export default function FillerWordCounter() {
   const [showGuestCard, setShowGuestCard] = useState(true);
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isVipUser, setIsVipUser] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const pausedTranscriptRef = useRef("");
@@ -110,6 +111,30 @@ export default function FillerWordCounter() {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [hasUnsavedChanges]);
+
+  useEffect(() => {
+    const checkVipAccess = async () => {
+      if (!user) {
+        setIsVipUser(false);
+        return;
+      }
+
+      try {
+        const vipDoc = await getDoc(doc(db, "access", "vip"));
+        if (vipDoc.exists()) {
+          const vipUsers = vipDoc.data().users || [];
+          setIsVipUser(vipUsers.includes(user.uid));
+        } else {
+          setIsVipUser(false);
+        }
+      } catch (error) {
+        console.error("Error checking VIP access:", error);
+        setIsVipUser(false);
+      }
+    };
+
+    checkVipAccess();
+  }, [user]);
 
   const handleSave = async () => {
     if (!user) return;
@@ -179,7 +204,17 @@ export default function FillerWordCounter() {
   };
 
   const toggleListening = () => {
-    if (user) {
+    if (isVipUser) {
+      // if (!isVipUser) {
+      //   toast({
+      //     title: "Premium Feature",
+      //     description:
+      //       "Enhanced speech recognition is only available to premium users.",
+      //     variant: "destructive",
+      //   });
+      //   return;
+      // }
+
       if (!isListening) {
         setupMicrophone().then(() => {
           connectToDeepgram({
@@ -234,7 +269,7 @@ export default function FillerWordCounter() {
   };
 
   useEffect(() => {
-    if (!user || !microphone || !connection) return;
+    if (!isVipUser || !microphone || !connection) return;
 
     const onData = (e: BlobEvent) => {
       if (e.data.size > 0 && connection.readyState === WebSocket.OPEN) {
@@ -268,6 +303,7 @@ export default function FillerWordCounter() {
     microphone,
     startMicrophone,
     user,
+    isVipUser,
     transcript,
     handleTranscriptUpdate,
   ]);
