@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const apiKey = process.env.DEEPGRAM_API_KEY;
+  console.log("API key:", apiKey);
   if (!apiKey) {
     console.error("Deepgram API key not found in environment variables");
     return NextResponse.json(
