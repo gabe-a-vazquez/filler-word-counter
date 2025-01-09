@@ -44,41 +44,52 @@ export function DeepgramProvider({ children }: { children: React.ReactNode }) {
   const [connectionState, setConnectionState] =
     React.useState<LiveConnectionState>(LiveConnectionState.NONE);
 
-  const connectToDeepgram = useCallback((options: any) => {
-    const apiKey = process.env.NEXT_PUBLIC_DEEPGRAM_API_KEY;
-    if (!apiKey) {
-      console.error("Deepgram API key not found");
-      return;
-    }
+  const connectToDeepgram = useCallback(async (options: any) => {
+    try {
+      // Get temporary token from our API
+      const response = await fetch("/api/deepgram", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(options),
+      });
 
-    const queryString = new URLSearchParams({
-      model: options.model || "nova-2",
-      interim_results: String(options.interim_results || true),
-      smart_format: String(options.smart_format || true),
-      filler_words: String(options.filler_words || true),
-      utterance_end_ms: String(options.utterance_end_ms || 3000),
-    }).toString();
+      const data = await response.json();
 
-    const socket = new WebSocket(
-      `wss://api.deepgram.com/v1/listen?${queryString}`,
-      ["token", apiKey]
-    );
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to get WebSocket credentials");
+      }
 
-    socket.onopen = () => {
-      setConnectionState(LiveConnectionState.OPEN);
-      console.log("WebSocket connection established");
-    };
+      if (!data.token || !data.queryString) {
+        throw new Error("Invalid response format from server");
+      }
 
-    socket.onclose = () => {
+      // Create WebSocket connection using temporary token
+      const socket = new WebSocket(
+        `wss://api.deepgram.com/v1/listen?${data.queryString}`,
+        ["token", data.token]
+      );
+
+      socket.onopen = () => {
+        setConnectionState(LiveConnectionState.OPEN);
+        console.log("WebSocket connection established");
+      };
+
+      socket.onclose = () => {
+        setConnectionState(LiveConnectionState.CLOSED);
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+
+      setConnection(socket);
+      setConnectionState(LiveConnectionState.CONNECTING);
+    } catch (error) {
+      console.error("Failed to connect to Deepgram:", error);
       setConnectionState(LiveConnectionState.CLOSED);
-    };
-
-    socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    setConnection(socket);
-    setConnectionState(LiveConnectionState.CONNECTING);
+    }
   }, []);
 
   return (
