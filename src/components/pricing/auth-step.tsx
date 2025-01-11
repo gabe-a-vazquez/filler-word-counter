@@ -12,18 +12,13 @@ import {
   CardTitle,
 } from "@filler-word-counter/components/shadcn/card";
 
-interface AuthStepProps {
-  onSuccess: () => void;
-}
-
-export function AuthStep({ onSuccess }: AuthStepProps) {
+export function AuthStep() {
   const [error, setError] = useState("");
 
-  const handleGoogleSignIn = async () => {
+  const handleSignIn = async () => {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      onSuccess();
     } catch (err: any) {
       setError("Failed to sign in with Google: " + err.message);
     }
@@ -46,7 +41,7 @@ export function AuthStep({ onSuccess }: AuthStepProps) {
             type="button"
             variant="outline"
             className="w-full h-11 text-base font-medium"
-            onClick={handleGoogleSignIn}
+            onClick={handleSignIn}
           >
             <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
               <path

@@ -40,9 +40,11 @@ export function PricingSection() {
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [selectedPriceId, setSelectedPriceId] = useState<string>("");
   const { toast } = useToast();
 
   const handleSubscribe = async (priceId: string) => {
+    setSelectedPriceId(priceId);
     if (!user) {
       setIsModalOpen(true);
       return;
@@ -103,6 +105,7 @@ export function PricingSection() {
           setClientSecret(null);
         }}
         clientSecret={clientSecret}
+        priceId={selectedPriceId}
       />
     </>
   );
