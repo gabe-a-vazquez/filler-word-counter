@@ -44,11 +44,7 @@ export function PricingSection() {
 
   const handleSubscribe = async (priceId: string) => {
     if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to subscribe to a plan",
-        variant: "destructive",
-      });
+      setIsModalOpen(true);
       return;
     }
 

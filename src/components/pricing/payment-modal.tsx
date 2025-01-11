@@ -7,7 +7,10 @@ import {
   DialogTitle,
 } from "@filler-word-counter/components/shadcn/dialog";
 import { PaymentFormWrapper } from "./payment-form-wrapper";
+import { AuthStep } from "./auth-step";
 import { useToast } from "@filler-word-counter/components/shadcn/use-toast";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@filler-word-counter/lib/firebase/config";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -20,6 +23,7 @@ export function PaymentModal({
   onClose,
   clientSecret,
 }: PaymentModalProps) {
+  const [user] = useAuthState(auth);
   const { toast } = useToast();
 
   const handleSuccess = () => {
@@ -42,9 +46,13 @@ export function PaymentModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Complete Your Subscription</DialogTitle>
+          <DialogTitle>
+            {!user ? "Complete Your Subscription" : "Payment Details"}
+          </DialogTitle>
         </DialogHeader>
-        {clientSecret ? (
+        {!user ? (
+          <AuthStep onSuccess={() => {}} />
+        ) : clientSecret ? (
           <PaymentFormWrapper
             clientSecret={clientSecret}
             onSuccess={handleSuccess}
