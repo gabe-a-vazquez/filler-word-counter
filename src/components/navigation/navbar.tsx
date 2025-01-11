@@ -36,6 +36,27 @@ export default function Navbar() {
     }
   };
 
+  const handlePortalRedirect = async () => {
+    try {
+      const token = await auth.currentUser?.getIdToken();
+
+      const response = await fetch("/api/create-portal-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to create portal session");
+
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   return (
     <nav className="h-16 border-b">
       <div className="h-full mx-auto flex items-center justify-between px-4">
@@ -70,6 +91,9 @@ export default function Navbar() {
                   <Link href="/dashboard" className="w-full">
                     Dashboard
                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handlePortalRedirect}>
+                  Manage Subscription
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>
                   Sign out
