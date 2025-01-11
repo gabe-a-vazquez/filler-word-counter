@@ -23,14 +23,14 @@ export function HeroButtons() {
 
   return (
     <div className="mt-10 flex gap-4">
-      <Link href="/counter">
+      <Link href="/pricing">
         <Button size="lg" className="text-lg">
-          Try for free
+          Start Free
         </Button>
       </Link>
-      <Link href="/signup">
+      <Link href="/login">
         <Button size="lg" variant="outline" className="text-lg">
-          Sign up
+          Login
         </Button>
       </Link>
     </div>

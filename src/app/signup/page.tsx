@@ -12,6 +12,7 @@ import {
 import { auth } from "@filler-word-counter/lib/firebase/config";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -74,6 +75,13 @@ export default function SignUpPage() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="mt-4 text-center text-sm text-gray-600">
+        Already have an account?{" "}
+        <Link href="/login" className="text-blue-600 hover:text-blue-800">
+          Login
+        </Link>
+      </div>
     </div>
   );
 }

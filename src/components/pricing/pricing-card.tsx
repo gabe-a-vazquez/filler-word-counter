@@ -7,6 +7,7 @@ import {
 } from "@filler-word-counter/components/shadcn/card";
 import { Check } from "lucide-react";
 import { cn } from "@filler-word-counter/lib/utils";
+import { useRouter } from "next/navigation";
 
 interface PricingCardProps {
   title: string;
@@ -25,6 +26,16 @@ export function PricingCard({
   onSubscribe,
   isPopular,
 }: PricingCardProps) {
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (price === "$0") {
+      router.push("/signup");
+    } else {
+      onSubscribe();
+    }
+  };
+
   return (
     <Card
       className={cn(
@@ -60,8 +71,8 @@ export function PricingCard({
             </li>
           ))}
         </ul>
-        <Button className="w-full mt-6" onClick={onSubscribe}>
-          Subscribe
+        <Button className="w-full mt-6" onClick={handleClick}>
+          {price === "$0" ? "Get Started" : "Subscribe"}
         </Button>
       </CardContent>
     </Card>

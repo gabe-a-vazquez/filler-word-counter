@@ -22,7 +22,7 @@ const PRICING_PLANS = [
   },
   {
     title: "Pro",
-    price: "$9.99/month",
+    price: "$4.99/month",
     description: "For professionals",
     features: [
       "Unlimited transcriptions",
