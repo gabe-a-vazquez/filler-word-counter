@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@filler-word-counter/components/shadcn/card";
 import { Check } from "lucide-react";
+import { cn } from "@filler-word-counter/lib/utils";
 
 interface PricingCardProps {
   title: string;
@@ -25,18 +26,32 @@ export function PricingCard({
   isPopular,
 }: PricingCardProps) {
   return (
-    <Card className={`w-[300px] ${isPopular ? "border-primary" : ""}`}>
+    <Card
+      className={cn(
+        "w-full max-w-sm h-[500px] flex flex-col",
+        isPopular && "border-primary"
+      )}
+    >
       <CardHeader>
-        <CardTitle className="flex justify-between">
-          {title}
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-2xl">{title}</CardTitle>
+            <p className="text-muted-foreground">{description}</p>
+          </div>
           {isPopular && (
-            <span className="text-sm text-primary">Most Popular</span>
+            <span className="px-2.5 py-0.5 text-sm bg-primary/10 text-primary rounded-full">
+              Most Popular
+            </span>
           )}
-        </CardTitle>
-        <div className="text-2xl font-bold">{price}</div>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
+        <div className="mt-4">
+          <span className="text-4xl font-bold">{price}</span>
+          {price !== "$0" && (
+            <span className="text-muted-foreground">/month</span>
+          )}
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 flex flex-col justify-between">
         <ul className="space-y-2">
           {features.map((feature, i) => (
             <li key={i} className="flex items-center">

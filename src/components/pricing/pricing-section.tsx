@@ -89,7 +89,7 @@ export function PricingSection() {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+      <div className="mx-auto max-w-4xl grid grid-cols-1 gap-8 lg:grid-cols-2 justify-items-center">
         {PRICING_PLANS.map((plan) => (
           <PricingCard
             key={plan.title}
