@@ -5,7 +5,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@filler-word-counter/components/shadcn/card";
+} from "@filler-word-counter/components/ui/card";
 import {
   Bar,
   BarChart,
@@ -17,14 +17,14 @@ import {
   Tooltip,
   Legend,
   Cell,
-} from "@filler-word-counter/components/shadcn/recharts";
+} from "@filler-word-counter/components/ui/recharts";
 import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
-import { db, auth } from "@filler-word-counter/lib/firebase/config";
+import { db, auth } from "@filler-word-counter/lib/firebase/firebase-client";
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { format } from "date-fns";
-import { cn } from "@filler-word-counter/lib/utils";
-import { Button } from "@filler-word-counter/components/shadcn/button";
+import { cn } from "@filler-word-counter/lib/tailwind/tailwind-utils";
+import { Button } from "@filler-word-counter/components/ui/button";
 import Link from "next/link";
 import {
   Select,
@@ -32,7 +32,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@filler-word-counter/components/shadcn/select";
+} from "@filler-word-counter/components/ui/select";
 import { Loader2 } from "lucide-react";
 
 interface FillerData {

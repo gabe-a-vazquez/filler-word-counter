@@ -6,7 +6,7 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { Button } from "@filler-word-counter/components/shadcn/button";
+import { Button } from "@filler-word-counter/components/ui/button";
 
 interface PaymentFormProps {
   clientSecret: string;

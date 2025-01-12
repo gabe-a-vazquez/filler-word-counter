@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { PricingCard } from "./pricing-card";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "@filler-word-counter/lib/firebase/config";
-import { useToast } from "@filler-word-counter/components/shadcn/use-toast";
+import { auth } from "@filler-word-counter/lib/firebase/firebase-client";
+import { useToast } from "@filler-word-counter/components/ui/use-toast";
 import { PaymentModal } from "./payment-modal";
 import { getIdToken } from "firebase/auth";
 

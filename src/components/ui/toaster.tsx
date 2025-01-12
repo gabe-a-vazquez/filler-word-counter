@@ -7,8 +7,8 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from "@filler-word-counter/components/shadcn/toast";
-import { useToast } from "@filler-word-counter/components/shadcn/use-toast";
+} from "@filler-word-counter/components/ui/toast";
+import { useToast } from "@filler-word-counter/components/ui/use-toast";
 
 export function Toaster() {
   const { toasts } = useToast();

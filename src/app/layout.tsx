@@ -1,9 +1,9 @@
 import { Inter } from "next/font/google";
-import { cn } from "@filler-word-counter/lib/utils";
-import { ThemeProvider } from "@filler-word-counter/components/ui/theme-provider";
-import { Toaster } from "@filler-word-counter/components/shadcn/toaster";
-import { DeepgramProvider } from "@filler-word-counter/context/deepgram-context-provider";
-import { MicrophoneProvider } from "@filler-word-counter/context/microphone-context-provider";
+import { cn } from "@filler-word-counter/lib/tailwind/tailwind-utils";
+import { ThemeProvider } from "@filler-word-counter/components/providers/theme-provider";
+import { Toaster } from "@filler-word-counter/components/ui/toaster";
+import { DeepgramProvider } from "@filler-word-counter/components/providers/deepgram-context-provider";
+import { MicrophoneProvider } from "@filler-word-counter/components/providers/microphone-context-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 

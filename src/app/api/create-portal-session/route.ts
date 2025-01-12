@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import Stripe from "stripe";
 import { getAuth } from "firebase-admin/auth";
-import { db } from "@filler-word-counter/lib/firebase-admin";
+import { db } from "@filler-word-counter/lib/firebase/firebase-admin";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-12-18.acacia",

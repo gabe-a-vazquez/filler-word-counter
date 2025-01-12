@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import stripe from "@filler-word-counter/lib/stripe";
+import stripe from "@filler-word-counter/lib/stripe/stripe-server";
 
 export async function POST(req: Request) {
   const body = await req.text();

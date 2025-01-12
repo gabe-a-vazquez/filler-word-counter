@@ -1,15 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button } from "@filler-word-counter/components/shadcn/button";
+import { Button } from "@filler-word-counter/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@filler-word-counter/components/shadcn/card";
-import { auth } from "@filler-word-counter/lib/firebase/config";
+} from "@filler-word-counter/components/ui/card";
+import { auth } from "@filler-word-counter/lib/firebase/firebase-client";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useState } from "react";
 import Link from "next/link";

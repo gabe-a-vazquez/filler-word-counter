@@ -3,7 +3,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@filler-word-counter/components/shadcn/card";
+} from "@filler-word-counter/components/ui/card";
 import { Laptop } from "lucide-react";
 
 export function MobileWarningCard() {

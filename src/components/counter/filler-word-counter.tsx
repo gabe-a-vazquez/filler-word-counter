@@ -7,19 +7,19 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@filler-word-counter/components/shadcn/card";
+} from "@filler-word-counter/components/ui/card";
 import { auth, db } from "@filler-word-counter/lib/firebase/config";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Save, RotateCcw, Pause, Play, Mic } from "lucide-react";
-import { useToast } from "@filler-word-counter/components/shadcn/use-toast";
+import { useToast } from "@filler-word-counter/components/ui/use-toast";
 import Link from "next/link";
 import {
   LiveConnectionState,
   LiveTranscriptionEvent,
   useDeepgram,
-} from "@filler-word-counter/context/deepgram-context-provider";
-import { useMicrophone } from "@filler-word-counter/context/microphone-context-provider";
+} from "@filler-word-counter/provider/deepgram-context-provider";
+import { useMicrophone } from "@filler-word-counter/provider/microphone-context-provider";
 import {
   calculateStats,
   countFillerWords,

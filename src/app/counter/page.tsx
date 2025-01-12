@@ -1,4 +1,4 @@
-import FillerWordCounter from "@filler-word-counter/components/widgets/filler-word-counter";
+import FillerWordCounter from "@filler-word-counter/components/counter/filler-word-counter";
 
 export default function SpeechAnalysis() {
   return (

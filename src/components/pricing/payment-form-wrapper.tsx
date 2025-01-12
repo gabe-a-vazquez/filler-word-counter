@@ -1,7 +1,7 @@
 "use client";
 
 import { Elements } from "@stripe/react-stripe-js";
-import stripePromise from "@filler-word-counter/lib/stripe-client";
+import stripePromise from "@filler-word-counter/lib/stripe/stripe-client";
 import { PaymentForm } from "./payment-form";
 import { Appearance, StripeElementsOptions } from "@stripe/stripe-js";
 

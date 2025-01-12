@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import stripe from "@filler-word-counter/lib/stripe";
-import { auth } from "@filler-word-counter/lib/firebase-admin";
+import stripe from "@filler-word-counter/lib/stripe/stripe-server";
+import { auth } from "@filler-word-counter/lib/firebase/firebase-admin";
 
 export async function POST(req: Request) {
   try {

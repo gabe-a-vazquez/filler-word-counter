@@ -1,12 +1,12 @@
-import { Button } from "@filler-word-counter/components/shadcn/button";
+import { Button } from "@filler-word-counter/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@filler-word-counter/components/shadcn/card";
+} from "@filler-word-counter/components/ui/card";
 import { Check } from "lucide-react";
-import { cn } from "@filler-word-counter/lib/utils";
+import { cn } from "@filler-word-counter/lib/tailwind/tailwind-utils";
 import { useRouter } from "next/navigation";
 
 interface PricingCardProps {

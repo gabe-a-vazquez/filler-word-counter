@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@filler-word-counter/components/shadcn/button";
-import { auth } from "@filler-word-counter/lib/firebase/config";
+import { Button } from "@filler-word-counter/components/ui/button";
+import { auth } from "@filler-word-counter/lib/firebase/firebase-client";
 import { useEffect, useState } from "react";
 import { User } from "firebase/auth";
 import {
@@ -10,7 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@filler-word-counter/components/shadcn/dropdown-menu";
+} from "@filler-word-counter/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -93,7 +93,7 @@ export default function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handlePortalRedirect}>
-                  Manage Subscription
+                  Subscription
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>
                   Sign out

@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@filler-word-counter/components/shadcn/button";
+import { Button } from "@filler-word-counter/components/ui/button";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { auth } from "@filler-word-counter/lib/firebase/config";
+import { auth } from "@filler-word-counter/lib/firebase/firebase-client";
 import { useState } from "react";
 import {
   Card,
@@ -10,7 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@filler-word-counter/components/shadcn/card";
+} from "@filler-word-counter/components/ui/card";
 
 export function AuthStep() {
   const [error, setError] = useState("");

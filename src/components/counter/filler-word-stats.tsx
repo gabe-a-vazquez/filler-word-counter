@@ -2,7 +2,7 @@ import {
   BASIC_FILLER_WORDS,
   PREMIUM_FILLER_WORDS,
 } from "@filler-word-counter/lib/speech-utils";
-import { Progress } from "@filler-word-counter/components/shadcn/progress";
+import { Progress } from "@filler-word-counter/components/ui/progress";
 
 interface FillerWordStatsProps {
   fillerCount: Record<string, number>;

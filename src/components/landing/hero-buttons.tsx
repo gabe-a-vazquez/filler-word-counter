@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@filler-word-counter/components/shadcn/button";
+import { Button } from "@filler-word-counter/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";

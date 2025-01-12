@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@filler-word-counter/components/shadcn/card";
+} from "@filler-word-counter/components/ui/card";
 import { auth } from "@filler-word-counter/lib/firebase/config";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useState } from "react";

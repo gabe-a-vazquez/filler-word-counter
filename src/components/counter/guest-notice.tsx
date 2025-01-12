@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@filler-word-counter/components/shadcn/button";
 import { X } from "lucide-react";
-import { CardContent } from "@filler-word-counter/components/shadcn/card";
+import { CardContent } from "@filler-word-counter/components/ui/card";
 
 interface GuestNoticeProps {
   onDismiss: () => void;

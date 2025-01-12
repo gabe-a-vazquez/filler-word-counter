@@ -5,15 +5,15 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@filler-word-counter/components/shadcn/dialog";
+} from "@filler-word-counter/components/ui/dialog";
 import { PaymentFormWrapper } from "./payment-form-wrapper";
 import { AuthStep } from "./auth-step";
-import { useToast } from "@filler-word-counter/components/shadcn/use-toast";
+import { useToast } from "@filler-word-counter/components/ui/use-toast";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "@filler-word-counter/lib/firebase/config";
+import { auth } from "@filler-word-counter/lib/firebase/firebase-client";
 import { getIdToken } from "firebase/auth";
 import { useState, useEffect } from "react";
-import { Skeleton } from "@filler-word-counter/components/shadcn/skeleton";
+import { Skeleton } from "@filler-word-counter/components/ui/skeleton";
 
 interface PaymentModalProps {
   isOpen: boolean;
