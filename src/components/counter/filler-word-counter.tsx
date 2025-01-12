@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@filler-word-counter/components/shadcn/button";
+import { Button } from "@filler-word-counter/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@filler-word-counter/components/ui/card";
-import { auth, db } from "@filler-word-counter/lib/firebase/config";
+import { auth, db } from "@filler-word-counter/lib/firebase/firebase-client";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Save, RotateCcw, Pause, Play, Mic } from "lucide-react";
@@ -18,12 +18,12 @@ import {
   LiveConnectionState,
   LiveTranscriptionEvent,
   useDeepgram,
-} from "@filler-word-counter/provider/deepgram-context-provider";
-import { useMicrophone } from "@filler-word-counter/provider/microphone-context-provider";
+} from "@filler-word-counter/components/providers/deepgram-context-provider";
+import { useMicrophone } from "@filler-word-counter/components/providers/microphone-context-provider";
 import {
   calculateStats,
   countFillerWords,
-} from "@filler-word-counter/lib/speech-utils";
+} from "@filler-word-counter/lib/speech/speech-utils";
 import { TranscriptCard } from "./transcript-card";
 import { FillerWordStats } from "./filler-word-stats";
 import { GuestNotice } from "./guest-notice";
