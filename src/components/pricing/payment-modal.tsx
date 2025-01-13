@@ -33,10 +33,10 @@ export function PaymentModal({
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user) {
+    if (user && !clientSecret && isOpen) {
       handleAuthSuccess();
     }
-  }, [user]);
+  }, [user, clientSecret, isOpen]);
 
   const handleAuthSuccess = async () => {
     if (!user) return;

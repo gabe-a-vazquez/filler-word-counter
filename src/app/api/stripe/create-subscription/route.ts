@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
 import stripe from "@filler-word-counter/lib/stripe/stripe-server";
-import { auth } from "@filler-word-counter/lib/firebase/firebase-admin";
+import { auth, db } from "@filler-word-counter/lib/firebase/firebase-admin";
 
 export async function POST(req: Request) {
   try {
-    const { priceId, customerId } = await req.json();
+    const { priceId } = await req.json();
 
-    // Verify Firebase auth token
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      console.log("Missing or invalid auth header");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -17,23 +15,32 @@ export async function POST(req: Request) {
     const decodedToken = await auth.verifyIdToken(token);
     const uid = decodedToken.uid;
 
-    // Get or create Stripe customer
-    let customer;
-    const customers = await stripe.customers.search({
-      query: `metadata['firebaseUID']:'${uid}'`,
-    });
+    // Get user details from Firebase
+    const userRecord = await auth.getUser(uid);
+    const { email, displayName } = userRecord;
 
-    if (customers.data.length > 0) {
-      customer = customers.data[0];
+    // First check if we already have a Stripe customer ID in Firebase
+    const stripeDoc = await db.collection(uid).doc("stripe").get();
+    let customer;
+
+    if (stripeDoc.exists && (stripeDoc.data() as { id: string })?.id) {
+      customer = await stripe.customers.retrieve(
+        (stripeDoc.data() as { id: string }).id
+      );
     } else {
       customer = await stripe.customers.create({
+        email: email || undefined,
+        name: displayName || undefined,
         metadata: {
           firebaseUID: uid,
         },
       });
+
+      await db.collection(uid).doc("stripe").set({
+        id: customer.id,
+      });
     }
 
-    // Create the subscription
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],

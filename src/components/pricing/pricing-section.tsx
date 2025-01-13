@@ -43,8 +43,13 @@ export function PricingSection() {
   const [selectedPriceId, setSelectedPriceId] = useState<string>("");
   const { toast } = useToast();
 
-  const handleSubscribe = async (priceId: string) => {
+  const handleSubscribe = async (priceId: string | undefined) => {
+    if (!priceId || loading) {
+      return;
+    }
+
     setSelectedPriceId(priceId);
+
     if (!user) {
       setIsModalOpen(true);
       return;
@@ -92,9 +97,8 @@ export function PricingSection() {
           <PricingCard
             key={plan.title}
             {...plan}
-            onSubscribe={() =>
-              !loading && plan.priceId && handleSubscribe(plan.priceId)
-            }
+            loading={loading}
+            onSubscribe={() => handleSubscribe(plan.priceId)}
           />
         ))}
       </div>

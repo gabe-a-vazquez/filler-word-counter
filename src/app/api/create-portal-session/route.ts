@@ -22,10 +22,10 @@ export async function POST() {
     const uid = decodedToken.uid;
 
     // Get user's Stripe customer ID from Firestore
-    const userDoc = await db.collection(uid).doc("userData").get();
-    const userData = userDoc.data();
-    console.log(userData);
-    if (!userData?.stripeCustomerId) {
+    const userDoc = await db.collection(uid).doc("stripe").get();
+    const userStripeData = userDoc.data();
+
+    if (!userStripeData?.id) {
       return NextResponse.json(
         { error: "No associated Stripe customer found" },
         { status: 400 }
@@ -34,7 +34,7 @@ export async function POST() {
 
     // Create Stripe portal session
     const session = await stripe.billingPortal.sessions.create({
-      customer: userData.stripeCustomerId,
+      customer: userStripeData.id,
       return_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing`,
     });
 

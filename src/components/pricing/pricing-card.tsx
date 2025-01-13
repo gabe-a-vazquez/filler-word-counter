@@ -14,8 +14,10 @@ interface PricingCardProps {
   price: string;
   description: string;
   features: string[];
-  onSubscribe: () => void;
+  priceId: string | undefined;
   isPopular?: boolean;
+  loading?: boolean;
+  onSubscribe: () => void;
 }
 
 export function PricingCard({
