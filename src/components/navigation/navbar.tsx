@@ -16,14 +16,30 @@ import Image from "next/image";
 
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
+  const [isCustomer, setIsCustomer] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       setUser(user);
+      if (user) {
+        // Check if user is a customer
+        const token = await user.getIdToken();
+        try {
+          const response = await fetch("/api/check-subscription", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const data = await response.json();
+          setIsCustomer(data.isCustomer);
+        } catch (error) {
+          console.error("Error checking subscription:", error);
+          setIsCustomer(false);
+        }
+      }
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
@@ -37,23 +53,27 @@ export default function Navbar() {
   };
 
   const handlePortalRedirect = async () => {
-    try {
-      const token = await auth.currentUser?.getIdToken();
+    if (!isCustomer) {
+      router.push("/pricing");
+    } else {
+      try {
+        const token = await auth.currentUser?.getIdToken();
 
-      const response = await fetch("/api/create-portal-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+        const response = await fetch("/api/create-portal-session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      if (!response.ok) throw new Error("Failed to create portal session");
+        if (!response.ok) throw new Error("Failed to create portal session");
 
-      const { url } = await response.json();
-      window.location.href = url;
-    } catch (error) {
-      console.error("Error:", error);
+        const { url } = await response.json();
+        window.location.href = url;
+      } catch (error) {
+        console.error("Error:", error);
+      }
     }
   };
 
