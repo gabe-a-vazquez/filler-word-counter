@@ -41,6 +41,32 @@ export async function POST(req: Request) {
       });
     }
 
+    // Check for existing incomplete subscriptions
+    const existingSubscriptions = await stripe.subscriptions.list({
+      customer: customer.id,
+      status: "incomplete",
+      limit: 1,
+    });
+
+    if (existingSubscriptions.data.length > 0) {
+      // Return the existing subscription's payment intent client secret
+      const existingSubscription = existingSubscriptions.data[0];
+      const latestInvoice = await stripe.invoices.retrieve(
+        existingSubscription.latest_invoice as string
+      );
+
+      if (latestInvoice.payment_intent) {
+        const paymentIntent = await stripe.paymentIntents.retrieve(
+          latestInvoice.payment_intent as string
+        );
+        return NextResponse.json({
+          subscriptionId: existingSubscription.id,
+          clientSecret: paymentIntent.client_secret,
+        });
+      }
+    }
+
+    // If no incomplete subscription exists, create a new one
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],

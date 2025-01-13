@@ -30,17 +30,19 @@ export function PaymentModal({
 }: PaymentModalProps) {
   const [user] = useAuthState(auth);
   const [clientSecret, setClientSecret] = useState(initialClientSecret);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user && !clientSecret && isOpen) {
+    if (user && !clientSecret && isOpen && !isLoading) {
       handleAuthSuccess();
     }
   }, [user, clientSecret, isOpen]);
 
   const handleAuthSuccess = async () => {
-    if (!user) return;
+    if (!user || isLoading) return;
 
+    setIsLoading(true);
     try {
       const token = await getIdToken(user);
       const response = await fetch("/api/stripe/create-subscription", {
@@ -60,7 +62,6 @@ export function PaymentModal({
       }
 
       const data = await response.json();
-      console.log(data.clientSecret);
       setClientSecret(data.clientSecret);
     } catch (error) {
       toast({
@@ -68,6 +69,8 @@ export function PaymentModal({
         description: "Failed to process subscription",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
