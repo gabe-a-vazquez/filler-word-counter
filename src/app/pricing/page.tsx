@@ -8,7 +8,8 @@ export default function PricingPage() {
           Choose Your Plan
         </h1>
         <p className="text-xl text-muted-foreground mb-8">
-          Start with our free plan or upgrade for unlimited features
+          Start with our free plan or upgrade for more monthly transcription
+          hours
         </p>
       </div>
       <PricingSection />

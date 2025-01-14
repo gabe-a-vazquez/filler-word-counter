@@ -14,9 +14,9 @@ const PRICING_PLANS = [
     price: "$0",
     description: "For casual users",
     features: [
-      "5 transcriptions/month",
-      "Basic analytics",
-      "Community support",
+      "30 minutes of Live Transcription",
+      "AI Generated Speech-to-Text transcription",
+      "Advanced analytics",
     ],
     priceId: "", // No price ID for free tier
   },
@@ -25,10 +25,9 @@ const PRICING_PLANS = [
     price: "$4.99/month",
     description: "For professionals",
     features: [
-      "Unlimited transcriptions",
+      "10 hours of Live Transcription",
+      "AI Generated Speech-to-Text transcription",
       "Advanced analytics",
-      "Priority support",
-      "Custom export formats",
     ],
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
     isPopular: true,
