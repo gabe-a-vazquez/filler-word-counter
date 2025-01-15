@@ -2,10 +2,13 @@ import { NextResponse } from "next/server";
 import { auth, db } from "@filler-word-counter/lib/firebase/firebase-admin";
 import stripe from "@filler-word-counter/lib/stripe/stripe-server";
 
+const STRIPE_PRODUCT_IDS = {
+  PRO: process.env.STRIPE_PRO_PRODUCT_ID!,
+} as const;
+
 const USAGE_LIMITS = {
-  basic: 10,
-  pro: 50,
-  enterprise: 200,
+  free: 0.5,
+  [STRIPE_PRODUCT_IDS.PRO]: 10,
 } as const;
 
 type SubscriptionTier = keyof typeof USAGE_LIMITS;
@@ -64,6 +67,9 @@ export async function GET(request: Request) {
     }
 
     const subscription = subscriptions.data[0];
+    // Get product ID from subscription
+    const productId = subscription.items.data[0].price.product as string;
+
     // Format dates as YYYY-MM-DD
     const billingPeriodStart = new Date(
       subscription.current_period_start * 1000
@@ -112,7 +118,6 @@ export async function GET(request: Request) {
       }
 
       const usage = JSON.parse(responseText);
-      console.log("Deepgram Usage:", usage);
 
       // Sum up all usage results
       const hoursUsed = usage.results.reduce((total: number, result: any) => {
@@ -125,10 +130,10 @@ export async function GET(request: Request) {
         lastUsageCheck: new Date(),
       });
 
-      // Get subscription tier and limits
-      const userSubscription =
-        (userData.subscription as SubscriptionTier) || "basic";
-      const limit = USAGE_LIMITS[userSubscription];
+      // Use product ID from Stripe instead of stored subscription
+      const limit =
+        USAGE_LIMITS[productId as SubscriptionTier] || USAGE_LIMITS.free;
+
       const usagePercentage = (hoursUsed / limit) * 100;
 
       return NextResponse.json({
