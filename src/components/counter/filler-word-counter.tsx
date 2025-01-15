@@ -63,6 +63,7 @@ export default function FillerWordCounter() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isVipUser, setIsVipUser] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isOverUsageLimit, setIsOverUsageLimit] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const pausedTranscriptRef = useRef("");
@@ -149,6 +150,37 @@ export default function FillerWordCounter() {
     setIsMobile(isMobileDevice());
   }, []);
 
+  useEffect(() => {
+    const checkUsage = async () => {
+      if (!user) return;
+
+      try {
+        const response = await fetch("/api/deepgram/check-usage", {
+          headers: {
+            Authorization: `Bearer ${await user.getIdToken()}`,
+          },
+        });
+        const data = await response.json();
+        console.log("Usage", data);
+
+        if (data.isOverLimit) {
+          setIsOverUsageLimit(true);
+          toast({
+            title: "Usage Limit Reached",
+            description:
+              "You've reached your usage limit. Please upgrade your plan to continue.",
+            variant: "destructive",
+            duration: Infinity,
+          });
+        }
+      } catch (error) {
+        console.error("Error checking usage:", error);
+      }
+    };
+
+    checkUsage();
+  }, [user, toast]);
+
   const handleSave = async () => {
     if (!user) return;
 
@@ -217,6 +249,16 @@ export default function FillerWordCounter() {
   };
 
   const toggleListening = () => {
+    if (isOverUsageLimit) {
+      toast({
+        title: "Usage Limit Reached",
+        description:
+          "You've reached your usage limit. Please upgrade your plan to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (isVipUser) {
       if (!isListening) {
         setupMicrophone().then(() => {
