@@ -18,7 +18,15 @@ export function HeroButtons() {
   }, []);
 
   if (isAuthenticated) {
-    return null;
+    return (
+      <div className="mt-10">
+        <Link href="/counter">
+          <Button size="lg" className="text-lg">
+            Start
+          </Button>
+        </Link>
+      </div>
+    );
   }
 
   return (
