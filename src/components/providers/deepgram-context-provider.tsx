@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useCallback } from "react";
+import { getAuth } from "firebase/auth";
 
 export enum LiveConnectionState {
   NONE = "none",
@@ -46,11 +47,21 @@ export function DeepgramProvider({ children }: { children: React.ReactNode }) {
 
   const connectToDeepgram = useCallback(async (options: any) => {
     try {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+
+      if (!currentUser) {
+        throw new Error("User must be logged in to use this feature");
+      }
+
+      const token = await currentUser.getIdToken();
+
       // Get temporary token from our API
       const response = await fetch("/api/deepgram", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(options),
       });
