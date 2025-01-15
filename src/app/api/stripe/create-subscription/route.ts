@@ -75,6 +75,21 @@ export async function POST(req: Request) {
       expand: ["latest_invoice.payment_intent"],
     });
 
+    // After successful subscription creation
+    const userId = uid;
+
+    // Create Deepgram project
+    await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/deepgram/create-api-key`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId }),
+      }
+    );
+
     return NextResponse.json({
       subscriptionId: subscription.id,
       clientSecret: (subscription.latest_invoice as any).payment_intent
