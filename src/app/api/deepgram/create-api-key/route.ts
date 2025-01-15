@@ -20,7 +20,7 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           comment: `API Key for user ${userId}`,
           tags: [`user_${userId}`],
-          scopes: ["usage:write", "usage:read", "transcribe"],
+          scopes: ["usage:write", "usage:read"],
         }),
       }
     );
