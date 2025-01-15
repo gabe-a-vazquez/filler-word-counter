@@ -161,7 +161,6 @@ export default function FillerWordCounter() {
           },
         });
         const data = await response.json();
-        console.log("Usage", data);
 
         if (data.isOverLimit) {
           setIsOverUsageLimit(true);
