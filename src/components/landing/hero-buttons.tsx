@@ -20,7 +20,7 @@ export function HeroButtons() {
   if (isAuthenticated) {
     return (
       <div className="mt-10">
-        <Link href="/counter">
+        <Link href="/speech-analyzer">
           <Button size="lg" className="text-lg">
             Start
           </Button>

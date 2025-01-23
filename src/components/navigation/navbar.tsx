@@ -84,7 +84,8 @@ export default function Navbar() {
           href={user ? "/dashboard" : "/"}
           className="text-xl font-semibold"
         >
-          Uhm Counter
+          <span className="text-black">Speech</span>
+          <span className="text-blue-600">AI</span>
         </Link>
 
         <div className="flex items-center gap-4">
@@ -103,8 +104,8 @@ export default function Navbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem>
-                  <Link href="/counter" className="w-full">
-                    Counter
+                  <Link href="/speech-analyzer" className="w-full">
+                    Speech Analyzer
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>

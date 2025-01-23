@@ -362,7 +362,7 @@ export default function FillerWordCounter() {
     <div className="max-w-2xl mx-auto space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Speech Analysis</CardTitle>
+          <CardTitle>Speech Analyzer</CardTitle>
         </CardHeader>
 
         {!user && showGuestCard && (

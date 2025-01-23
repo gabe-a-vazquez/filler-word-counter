@@ -226,12 +226,12 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 p-8">
       {aggregatedData && aggregatedData.timeSeriesData.length > 0 && (
         <div className="max-w-7xl mx-auto mb-6">
-          <Link href="/counter">
+          <Link href="/speech-analyzer">
             <Button
               variant="outline"
               className="mb-4 text-blue-600 border-blue-600 hover:bg-blue-50"
             >
-              ← Back to Counter
+              ← Speech Analyzer
             </Button>
           </Link>
         </div>
@@ -279,7 +279,7 @@ export default function DashboardPage() {
                 You haven't recorded any sessions yet. Head over to the counter
                 to start tracking your filler words!
               </p>
-              <Link href="/counter">
+              <Link href="/speech-analyzer">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                   Start Your First Session
                 </Button>

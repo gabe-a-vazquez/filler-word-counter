@@ -8,7 +8,7 @@ import { MicrophoneProvider } from "@filler-word-counter/components/providers/mi
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Uhm Counter",
+  title: "Speech AI",
   description:
     "Improve your public speaking by tracking and reducing filler words in real-time. Perfect for presentations, interviews, and speeches.",
 };
