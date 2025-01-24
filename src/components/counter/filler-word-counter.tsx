@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@filler-word-counter/components/ui/button";
 import {
   Card,
@@ -28,6 +28,7 @@ import { TranscriptCard } from "./transcript-card";
 import { FillerWordStats } from "./filler-word-stats";
 import { GuestNotice } from "./guest-notice";
 import { MobileWarningCard } from "./mobile-warning-card";
+import dynamic from "next/dynamic";
 
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
@@ -51,6 +52,12 @@ function isMobileDevice() {
   );
 }
 
+// Dynamically import the worker
+const createWorker = () => {
+  if (typeof window === "undefined") return null;
+  return new Worker(new URL("../../app/worker.js", import.meta.url));
+};
+
 export default function FillerWordCounter() {
   const [isListening, setIsListening] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -64,6 +71,9 @@ export default function FillerWordCounter() {
   const [isVipUser, setIsVipUser] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isOverUsageLimit, setIsOverUsageLimit] = useState(false);
+  const [transformerResults, setTransformerResults] = useState<
+    Record<string, any>
+  >({});
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const pausedTranscriptRef = useRef("");
@@ -72,11 +82,28 @@ export default function FillerWordCounter() {
   const { connection, connectToDeepgram, connectionState } = useDeepgram();
   const { setupMicrophone, microphone, startMicrophone, microphoneState } =
     useMicrophone();
+  const workerRef = useRef<Worker | null>(null);
 
-  const handleTranscriptUpdate = (newTranscript: string) => {
-    setTranscript(newTranscript);
-    setFillerCount(countFillerWords(newTranscript, isVipUser));
-  };
+  const analyzeText = useCallback(
+    debounce((text: string) => {
+      if (workerRef.current && isVipUser) {
+        console.log("Sending text to worker:", text);
+        workerRef.current.postMessage({ text });
+      }
+    }, 1000),
+    [isVipUser]
+  );
+
+  const handleTranscriptUpdate = useCallback(
+    (newTranscript: string) => {
+      setTranscript(newTranscript);
+      setFillerCount(
+        countFillerWords(newTranscript, isVipUser, transformerResults)
+      );
+      analyzeText(newTranscript);
+    },
+    [isVipUser, transformerResults, analyzeText]
+  );
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -180,12 +207,48 @@ export default function FillerWordCounter() {
     checkUsage();
   }, [user, toast]);
 
+  useEffect(() => {
+    const worker = createWorker();
+    console.log("worker", worker);
+    if (worker) {
+      worker.onmessage = (event) => {
+        const { status, results, error, data } = event.data;
+        // console.log("Worker message received:", status);
+
+        switch (status) {
+          case "complete":
+            setTransformerResults(results);
+            break;
+          case "error":
+            console.error("Transformer error:", error);
+            toast({
+              title: "Analysis Error",
+              description:
+                "Failed to analyze filler words. Using basic detection.",
+              variant: "destructive",
+            });
+            break;
+          case "progress":
+            console.log("Loading model:", data);
+            break;
+        }
+      };
+
+      workerRef.current = worker;
+
+      return () => {
+        worker.terminate();
+        workerRef.current = null;
+      };
+    }
+  }, []);
+
   const handleSave = async () => {
     if (!user) return;
 
     setIsSaving(true);
     try {
-      const stats = calculateStats(transcript, fillerCount);
+      const stats = calculateStats(transcript, fillerCount, transformerResults);
       await setDoc(doc(db, user.uid, sessionId), {
         userId: user.uid,
         fillerCount,
@@ -352,7 +415,7 @@ export default function FillerWordCounter() {
     handleTranscriptUpdate,
   ]);
 
-  const stats = calculateStats(transcript, fillerCount);
+  const stats = calculateStats(transcript, fillerCount, transformerResults);
 
   if (isMobile && !isVipUser) {
     return <MobileWarningCard />;
@@ -426,4 +489,15 @@ export default function FillerWordCounter() {
       <TranscriptCard transcript={transcript} />
     </div>
   );
+}
+
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
 }
