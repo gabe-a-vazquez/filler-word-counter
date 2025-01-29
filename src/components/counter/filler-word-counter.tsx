@@ -81,7 +81,6 @@ export default function FillerWordCounter() {
         // Get only the new text since last processing
         const newText = text.slice(lastProcessedIndex).trim();
         if (newText) {
-          console.log("Sending new text to worker:", newText);
           workerRef.current.postMessage({ text: newText });
           setLastProcessedIndex(text.length);
         }

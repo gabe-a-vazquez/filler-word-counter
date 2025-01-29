@@ -14,10 +14,7 @@ export function FillerWordStats({
   totalWords,
   totalFillerWords,
   fillerPercentage,
-  isVipUser,
 }: FillerWordStatsProps) {
-  // const fillerWords = isVipUser ? PREMIUM_FILLER_WORDS : BASIC_FILLER_WORDS;
-
   return (
     <div className="space-y-4 mt-4">
       <div className="mt-4">
