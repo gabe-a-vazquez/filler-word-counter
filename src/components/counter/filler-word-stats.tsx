@@ -1,7 +1,4 @@
-import {
-  BASIC_FILLER_WORDS,
-  PREMIUM_FILLER_WORDS,
-} from "@filler-word-counter/lib/speech/speech-utils";
+import { FILLER_WORDS } from "@filler-word-counter/lib/speech/speech-utils";
 import { Progress } from "@filler-word-counter/components/ui/progress";
 
 interface FillerWordStatsProps {
@@ -19,7 +16,7 @@ export function FillerWordStats({
   fillerPercentage,
   isVipUser,
 }: FillerWordStatsProps) {
-  const fillerWords = isVipUser ? PREMIUM_FILLER_WORDS : BASIC_FILLER_WORDS;
+  // const fillerWords = isVipUser ? PREMIUM_FILLER_WORDS : BASIC_FILLER_WORDS;
 
   return (
     <div className="space-y-4 mt-4">
@@ -33,7 +30,7 @@ export function FillerWordStats({
 
       <div className="space-y-2">
         <div className="grid gap-1.5">
-          {fillerWords.map((word) => {
+          {FILLER_WORDS.map((word) => {
             return (
               <div key={word} className="flex justify-between items-center">
                 <span className="capitalize">{word}</span>

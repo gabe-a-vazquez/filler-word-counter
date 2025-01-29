@@ -1,15 +1,11 @@
-export const BASIC_FILLER_WORDS = [
+export const FILLER_WORDS = [
+  "uh",
+  "um",
   "like",
   "basically",
   "literally",
   "actually",
   "so",
-] as const;
-
-export const PREMIUM_FILLER_WORDS = [
-  "uh",
-  "um",
-  ...BASIC_FILLER_WORDS,
 ] as const;
 
 export const calculateStats = (
