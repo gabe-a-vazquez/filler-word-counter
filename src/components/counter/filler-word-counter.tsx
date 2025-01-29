@@ -27,7 +27,6 @@ import {
 import { TranscriptCard } from "./transcript-card";
 import { FillerWordStats } from "./filler-word-stats";
 import { GuestNotice } from "./guest-notice";
-import { MobileWarningCard } from "./mobile-warning-card";
 
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
@@ -42,13 +41,6 @@ declare global {
     SpeechRecognition: new () => SpeechRecognition;
     webkitSpeechRecognition: new () => SpeechRecognition;
   }
-}
-
-function isMobileDevice() {
-  if (typeof window === "undefined") return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  );
 }
 
 // Dynamically import the worker
@@ -68,7 +60,6 @@ export default function FillerWordCounter() {
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isVipUser, setIsVipUser] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [isOverUsageLimit, setIsOverUsageLimit] = useState(false);
   const [transformerResults, setTransformerResults] = useState<
     Record<string, any>
@@ -174,10 +165,6 @@ export default function FillerWordCounter() {
 
     checkVipAccess();
   }, [user]);
-
-  useEffect(() => {
-    setIsMobile(isMobileDevice());
-  }, []);
 
   useEffect(() => {
     const checkUsage = async () => {
@@ -417,10 +404,6 @@ export default function FillerWordCounter() {
     transcript,
     handleTranscriptUpdate,
   ]);
-
-  if (isMobile && !isVipUser) {
-    return <MobileWarningCard />;
-  }
 
   const stats = calculateStats(transcript, fillerCount);
 
