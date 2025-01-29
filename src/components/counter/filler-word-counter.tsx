@@ -28,7 +28,6 @@ import { TranscriptCard } from "./transcript-card";
 import { FillerWordStats } from "./filler-word-stats";
 import { GuestNotice } from "./guest-notice";
 import { MobileWarningCard } from "./mobile-warning-card";
-import dynamic from "next/dynamic";
 
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
@@ -74,6 +73,7 @@ export default function FillerWordCounter() {
   const [transformerResults, setTransformerResults] = useState<
     Record<string, any>
   >({});
+  const [lastProcessedIndex, setLastProcessedIndex] = useState(0);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const pausedTranscriptRef = useRef("");
@@ -87,22 +87,24 @@ export default function FillerWordCounter() {
   const analyzeText = useCallback(
     debounce((text: string) => {
       if (workerRef.current && isVipUser) {
-        console.log("Sending text to worker:", text);
-        workerRef.current.postMessage({ text });
+        // Get only the new text since last processing
+        const newText = text.slice(lastProcessedIndex).trim();
+        if (newText) {
+          console.log("Sending new text to worker:", newText);
+          workerRef.current.postMessage({ text: newText });
+          setLastProcessedIndex(text.length);
+        }
       }
     }, 1000),
-    [isVipUser]
+    [isVipUser, lastProcessedIndex]
   );
 
   const handleTranscriptUpdate = useCallback(
     (newTranscript: string) => {
       setTranscript(newTranscript);
-      setFillerCount(
-        countFillerWords(newTranscript, isVipUser, transformerResults)
-      );
       analyzeText(newTranscript);
     },
-    [isVipUser, transformerResults, analyzeText]
+    [analyzeText]
   );
 
   useEffect(() => {
@@ -209,15 +211,14 @@ export default function FillerWordCounter() {
 
   useEffect(() => {
     const worker = createWorker();
-    console.log("worker", worker);
     if (worker) {
       worker.onmessage = (event) => {
-        const { status, results, error, data } = event.data;
-        // console.log("Worker message received:", status);
+        const { status, results, error } = event.data;
 
         switch (status) {
           case "complete":
             setTransformerResults(results);
+            setFillerCount(countFillerWords(fillerCount, results));
             break;
           case "error":
             console.error("Transformer error:", error);
@@ -229,7 +230,6 @@ export default function FillerWordCounter() {
             });
             break;
           case "progress":
-            console.log("Loading model:", data);
             break;
         }
       };
@@ -248,7 +248,6 @@ export default function FillerWordCounter() {
 
     setIsSaving(true);
     try {
-      const stats = calculateStats(transcript, fillerCount, transformerResults);
       await setDoc(doc(db, user.uid, sessionId), {
         userId: user.uid,
         fillerCount,
@@ -308,6 +307,10 @@ export default function FillerWordCounter() {
     setHasUnsavedChanges(false);
     setLastSaveTime(null);
     pausedTranscriptRef.current = "";
+    if (workerRef.current) {
+      workerRef.current.postMessage({ type: "reset" });
+    }
+    setLastProcessedIndex(0);
   };
 
   const toggleListening = () => {
@@ -415,11 +418,11 @@ export default function FillerWordCounter() {
     handleTranscriptUpdate,
   ]);
 
-  const stats = calculateStats(transcript, fillerCount, transformerResults);
-
   if (isMobile && !isVipUser) {
     return <MobileWarningCard />;
   }
+
+  const stats = calculateStats(transcript, fillerCount);
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">

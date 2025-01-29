@@ -20,7 +20,6 @@ export function FillerWordStats({
   isVipUser,
 }: FillerWordStatsProps) {
   const fillerWords = isVipUser ? PREMIUM_FILLER_WORDS : BASIC_FILLER_WORDS;
-  const maxCount = Math.max(...Object.values(fillerCount), 1);
 
   return (
     <div className="space-y-4 mt-4">

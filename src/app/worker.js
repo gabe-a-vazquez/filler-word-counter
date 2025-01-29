@@ -50,6 +50,8 @@ function calculateAverageSimilarity(embedding, patternEmbeddings) {
   return similarities.reduce((sum, val) => sum + val, 0) / similarities.length;
 }
 
+let accumulatedResults = {};
+
 // Listen for messages from the main thread
 self.addEventListener("message", async (event) => {
   try {
@@ -65,9 +67,8 @@ self.addEventListener("message", async (event) => {
       pooling: "mean",
       normalize: true,
     });
-    console.log("textEmbedding", textEmbedding);
 
-    const results = {};
+    const newResults = {};
 
     for (const [word, patterns] of Object.entries(USAGE_PATTERNS)) {
       if (text.toLowerCase().includes(word)) {
@@ -92,21 +93,22 @@ self.addEventListener("message", async (event) => {
           meaningfulEmbeddings
         );
 
-        results[word] = {
+        newResults[word] = {
           isFillerWord: fillerSimilarity > meaningfulSimilarity,
           fillerSimilarity,
           meaningfulSimilarity,
           confidence: Math.abs(fillerSimilarity - meaningfulSimilarity),
           context: text,
         };
-
-        console.log("results", results);
       }
     }
 
+    // Merge new results with accumulated results
+    accumulatedResults = { ...accumulatedResults, ...newResults };
+
     self.postMessage({
       status: "complete",
-      results,
+      results: accumulatedResults,
     });
   } catch (error) {
     console.error("Error in worker:", error);
@@ -114,5 +116,12 @@ self.addEventListener("message", async (event) => {
       status: "error",
       error: error.message,
     });
+  }
+});
+
+// Add handler for reset
+self.addEventListener("message", (event) => {
+  if (event.data.type === "reset") {
+    accumulatedResults = {};
   }
 });
