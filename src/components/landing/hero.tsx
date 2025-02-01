@@ -1,4 +1,3 @@
-// This remains a server component
 import { HeroButtons } from "./hero-buttons";
 
 export default function Hero() {
