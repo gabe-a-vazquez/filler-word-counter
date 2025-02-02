@@ -281,7 +281,7 @@ export default function DashboardPage() {
               </p>
               <Link href="/speech-analyzer">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                  Start Your First Session
+                  Start Your First Speech Analysis
                 </Button>
               </Link>
             </CardContent>

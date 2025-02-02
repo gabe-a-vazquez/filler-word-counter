@@ -14,34 +14,31 @@ A modern web application designed to help users improve their public speaking sk
 
 - Comprehensive speech pattern analysis
 - Track progress over time
-- Identify areas for improvement
-
-### Practice Mode
-
-- Low-pressure environment for speech preparation
-- Perfect your delivery before important presentations
-- Build confidence through regular practice
 
 ## 🚀 Tech Stack
 
 - **Frontend Framework**: Next.js
+- **Speech Recognition**: Deepgram API
+- **Text Analysis**: Transformers.js with Supabase/gte-small embeddings
 - **Styling**: Tailwind CSS
 - **Language**: TypeScript
-- **Speech Recognition**: Deepgram API
 
 ## 💡 Usage
 
-1. Navigate to the practice section
-2. Allow microphone access when prompted
-3. Begin speaking to see real-time filler word detection
-4. View your analytics to track improvement
+1. Navigate to [speechai.co](https://www.speechai.co/)
+2. Click the "Start Free" button
+3. Sign up with your Google account
+4. Click Start "Start Your First Speech Analysis"
+5. Click "Start"
+6. Allow microphone access when prompted
+7. Begin speaking to see real-time filler word detection
+8. View your analytics to track improvement
 
 ## 🔗 Links
 
-- [Live Demo](your-demo-link)
-- [Portfolio](your-portfolio)
-- [LinkedIn](your-linkedin)
+- [Live Demo](https://www.speechai.co/)
+- [LinkedIn](https://www.linkedin.com/in/gabeavazquez/)
 
 ---
 
-Built with ❤️ by [Your Name]
+Built with ❤️ by Gabe Vazquez
