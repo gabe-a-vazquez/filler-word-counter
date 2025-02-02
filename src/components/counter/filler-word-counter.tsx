@@ -61,9 +61,6 @@ export default function FillerWordCounter() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isVipUser, setIsVipUser] = useState(false);
   const [isOverUsageLimit, setIsOverUsageLimit] = useState(false);
-  const [transformerResults, setTransformerResults] = useState<
-    Record<string, any>
-  >({});
   const [lastProcessedIndex, setLastProcessedIndex] = useState(0);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -203,8 +200,7 @@ export default function FillerWordCounter() {
 
         switch (status) {
           case "complete":
-            setTransformerResults(results);
-            setFillerCount(countFillerWords(fillerCount, results));
+            setFillerCount((prev) => countFillerWords(prev, results));
             break;
           case "error":
             console.error("Transformer error:", error);

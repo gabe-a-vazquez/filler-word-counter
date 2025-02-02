@@ -33,13 +33,20 @@ export const calculateStats = (
 };
 
 export const countFillerWords = (
-  fillerCount: Record<string, number>,
+  existingCounts: Record<string, number>,
   transformerResults: Record<string, any>
 ): Record<string, number> => {
+  // Create a new object to avoid mutating the existing counts
+  const newCounts = { ...existingCounts };
+
+  // Process new results and add to counts
   Object.entries(transformerResults).forEach(([word, result]) => {
-    if (!fillerCount[word]) fillerCount[word] = 0;
-    if (result.isFillerWord) fillerCount[word]++;
+    console.log(result);
+    if (result.isFillerWord) {
+      if (!newCounts[word]) newCounts[word] = 1;
+      else newCounts[word]++;
+    }
   });
 
-  return fillerCount;
+  return newCounts;
 };

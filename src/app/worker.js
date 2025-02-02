@@ -57,12 +57,10 @@ self.addEventListener("message", async (event) => {
   try {
     const { text } = event.data;
 
-    // Get the feature extraction pipeline
     let extractor = await PipelineSingleton.getInstance((x) => {
       self.postMessage({ status: "progress", data: x });
     });
 
-    // Get embeddings for input text
     const textEmbedding = await extractor(text, {
       pooling: "mean",
       normalize: true,
@@ -71,6 +69,7 @@ self.addEventListener("message", async (event) => {
     const newResults = {};
 
     for (const [word, patterns] of Object.entries(USAGE_PATTERNS)) {
+      // Only analyze if the new text contains the word
       if (text.toLowerCase().includes(word)) {
         const fillerEmbeddings = await Promise.all(
           patterns.filler_patterns.map((p) =>
@@ -88,6 +87,7 @@ self.addEventListener("message", async (event) => {
           textEmbedding,
           fillerEmbeddings
         );
+
         const meaningfulSimilarity = calculateAverageSimilarity(
           textEmbedding,
           meaningfulEmbeddings
@@ -103,13 +103,14 @@ self.addEventListener("message", async (event) => {
       }
     }
 
-    // Merge new results with accumulated results
-    accumulatedResults = { ...accumulatedResults, ...newResults };
-
-    self.postMessage({
-      status: "complete",
-      results: accumulatedResults,
-    });
+    // Only send if we have new results
+    if (Object.keys(newResults).length) {
+      self.postMessage({
+        status: "complete",
+        results: newResults,
+        analyzedText: text,
+      });
+    }
   } catch (error) {
     console.error("Error in worker:", error);
     self.postMessage({
@@ -118,7 +119,6 @@ self.addEventListener("message", async (event) => {
     });
   }
 });
-
 // Add handler for reset
 self.addEventListener("message", (event) => {
   if (event.data.type === "reset") {
