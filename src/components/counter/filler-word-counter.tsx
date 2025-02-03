@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@filler-word-counter/components/ui/card";
 import { auth, db } from "@filler-word-counter/lib/firebase/firebase-client";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Save, RotateCcw, Pause, Play, Mic } from "lucide-react";
 import { useToast } from "@filler-word-counter/components/ui/use-toast";
