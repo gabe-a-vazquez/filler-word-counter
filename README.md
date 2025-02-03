@@ -16,6 +16,21 @@ A modern web application designed to help users improve their public speaking sk
 
 - Comprehensive speech pattern analysis
 - Track progress over time
+- Historical data visualization with interactive charts
+- Session-by-session analysis of filler word usage
+
+### Premium Features
+
+- Subscription-based access to advanced features
+- Secure payment processing through Stripe
+- Flexible pricing plans for different user needs
+
+### Data Management
+
+- Secure user data storage with Firebase
+- Real-time data synchronization
+- Scalable NoSQL database architecture
+- Comprehensive analytics tracking and retrieval
 
 ## 🚀 Tech Stack
 
@@ -24,6 +39,10 @@ A modern web application designed to help users improve their public speaking sk
 - **Text Analysis**: Transformers.js with Supabase/gte-small embeddings
 - **Styling**: Tailwind CSS
 - **Language**: TypeScript
+- **Payments**: Stripe API with webhook integration
+- **Authentication**: Firebase Auth
+- **Database**: Firebase Firestore
+- **Analytics**: Custom analytics with Firebase Admin SDK
 
 ## 💡 Usage
 
@@ -35,6 +54,20 @@ A modern web application designed to help users improve their public speaking sk
 6. Allow microphone access when prompted
 7. Begin speaking to see real-time filler word detection
 8. View your analytics to track improvement
+
+### Data Storage
+
+- Speech analysis sessions automatically saved to Firebase
+- Secure user-specific data collections
+- Real-time data updates and synchronization
+- Historical data access for progress tracking
+
+### Subscription Management
+
+- Choose from different pricing tiers
+- Secure checkout process via Stripe
+- Automatic subscription renewal
+- Easy cancellation through dashboard
 
 ## 🔗 Links
 
