@@ -6,7 +6,6 @@ interface FillerWordStatsProps {
   totalWords: number;
   totalFillerWords: number;
   fillerPercentage: number;
-  isVipUser: boolean;
 }
 
 export function FillerWordStats({

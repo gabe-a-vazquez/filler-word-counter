@@ -26,7 +26,6 @@ import {
 } from "@filler-word-counter/lib/speech/speech-utils";
 import { TranscriptCard } from "./transcript-card";
 import { FillerWordStats } from "./filler-word-stats";
-import { GuestNotice } from "./guest-notice";
 
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
@@ -56,10 +55,8 @@ export default function FillerWordCounter() {
   const [fillerCount, setFillerCount] = useState<Record<string, number>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [sessionId] = useState<string>(new Date().getTime().toString());
-  const [showGuestCard, setShowGuestCard] = useState(true);
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [isVipUser, setIsVipUser] = useState(false);
   const [isOverUsageLimit, setIsOverUsageLimit] = useState(false);
   const [lastProcessedIndex, setLastProcessedIndex] = useState(0);
 
@@ -68,13 +65,12 @@ export default function FillerWordCounter() {
   const [user] = useAuthState(auth);
   const { toast } = useToast();
   const { connection, connectToDeepgram, connectionState } = useDeepgram();
-  const { setupMicrophone, microphone, startMicrophone, microphoneState } =
-    useMicrophone();
+  const { setupMicrophone, microphone, startMicrophone } = useMicrophone();
   const workerRef = useRef<Worker | null>(null);
 
   const analyzeText = useCallback(
     debounce((text: string) => {
-      if (workerRef.current && isVipUser) {
+      if (workerRef.current) {
         // Get only the new text since last processing
         const newText = text.slice(lastProcessedIndex).trim();
         if (newText) {
@@ -83,7 +79,7 @@ export default function FillerWordCounter() {
         }
       }
     }, 1000),
-    [isVipUser, lastProcessedIndex]
+    [lastProcessedIndex]
   );
 
   const handleTranscriptUpdate = useCallback(
@@ -137,30 +133,6 @@ export default function FillerWordCounter() {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [hasUnsavedChanges]);
-
-  useEffect(() => {
-    const checkVipAccess = async () => {
-      if (!user) {
-        setIsVipUser(false);
-        return;
-      }
-
-      try {
-        const vipDoc = await getDoc(doc(db, "access", "vip"));
-        if (vipDoc.exists()) {
-          const vipUsers = vipDoc.data().users || [];
-          setIsVipUser(vipUsers.includes(user.uid));
-        } else {
-          setIsVipUser(false);
-        }
-      } catch (error) {
-        console.error("Error checking VIP access:", error);
-        setIsVipUser(false);
-      }
-    };
-
-    checkVipAccess();
-  }, [user]);
 
   useEffect(() => {
     const checkUsage = async () => {
@@ -306,8 +278,19 @@ export default function FillerWordCounter() {
       return;
     }
 
-    if (isVipUser) {
-      if (!isListening) {
+    if (!isListening) {
+      setupMicrophone().then(() => {
+        connectToDeepgram({
+          model: "nova-2",
+          interim_results: true,
+          smart_format: true,
+          filler_words: true,
+        });
+        setIsListening(true);
+        setIsPaused(false);
+      });
+    } else {
+      if (isPaused) {
         setupMicrophone().then(() => {
           connectToDeepgram({
             model: "nova-2",
@@ -315,53 +298,23 @@ export default function FillerWordCounter() {
             smart_format: true,
             filler_words: true,
           });
-          setIsListening(true);
           setIsPaused(false);
         });
       } else {
-        if (isPaused) {
-          setupMicrophone().then(() => {
-            connectToDeepgram({
-              model: "nova-2",
-              interim_results: true,
-              smart_format: true,
-              filler_words: true,
-            });
-            setIsPaused(false);
-          });
-        } else {
-          if (connection) {
-            connection.close();
-            if (microphone) {
-              microphone.stop();
-              microphone.stream.getTracks().forEach((track) => track.stop());
-            }
+        if (connection) {
+          connection.close();
+          if (microphone) {
+            microphone.stop();
+            microphone.stream.getTracks().forEach((track) => track.stop());
           }
-          setIsPaused(true);
         }
-      }
-    } else {
-      if (!recognitionRef.current) return;
-      if (!isListening) {
-        recognitionRef.current.start();
-        setIsListening(true);
-        setIsPaused(false);
-      } else {
-        if (isPaused) {
-          pausedTranscriptRef.current = transcript;
-          recognitionRef.current.start();
-          setIsPaused(false);
-        } else {
-          pausedTranscriptRef.current = transcript;
-          recognitionRef.current.stop();
-          setIsPaused(true);
-        }
+        setIsPaused(true);
       }
     }
   };
 
   useEffect(() => {
-    if (!isVipUser || !microphone || !connection) return;
+    if (!microphone || !connection) return;
 
     const onData = (e: BlobEvent) => {
       if (e.data.size > 0 && connection.readyState === WebSocket.OPEN) {
@@ -395,7 +348,6 @@ export default function FillerWordCounter() {
     microphone,
     startMicrophone,
     user,
-    isVipUser,
     transcript,
     handleTranscriptUpdate,
   ]);
@@ -408,10 +360,6 @@ export default function FillerWordCounter() {
         <CardHeader>
           <CardTitle>Speech Analyzer</CardTitle>
         </CardHeader>
-
-        {!user && showGuestCard && (
-          <GuestNotice onDismiss={() => setShowGuestCard(false)} />
-        )}
 
         <CardContent>
           <div className="flex gap-2">
@@ -459,11 +407,7 @@ export default function FillerWordCounter() {
             )}
           </div>
 
-          <FillerWordStats
-            fillerCount={fillerCount}
-            {...stats}
-            isVipUser={isVipUser}
-          />
+          <FillerWordStats fillerCount={fillerCount} {...stats} />
         </CardContent>
       </Card>
 
