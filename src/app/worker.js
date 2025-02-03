@@ -74,20 +74,20 @@ const USAGE_PATTERNS = {
       "The experiment actually worked",
     ],
   },
-  // so: {
-  //   filler_patterns: [
-  //     "I'm so like whatever",
-  //     "It's so totally awesome",
-  //     "So, anyway, as I was saying",
-  //     "So, yeah, that happened",
-  //   ],
-  //   meaningful_patterns: [
-  //     "I am so happy",
-  //     "The water is so cold",
-  //     "She ran so fast",
-  //     "They worked so hard",
-  //   ],
-  // },
+  so: {
+    filler_patterns: [
+      "I'm so like whatever",
+      "It's so totally awesome",
+      "So, anyway, as I was saying",
+      "So, yeah, that happened",
+    ],
+    meaningful_patterns: [
+      "I am so happy",
+      "The water is so cold",
+      "She ran so fast",
+      "They worked so hard",
+    ],
+  },
 };
 
 function cosineSimilarity(embeddings1, embeddings2) {
@@ -114,9 +114,9 @@ self.addEventListener("message", async (event) => {
     const newResults = {};
 
     // First handle "uh" and "um" without using the transformer
-    text.toLowerCase().split(/\s+/);
+    const words = text.toLowerCase().split(/\s+/);
     ["uh", "um"].forEach((word) => {
-      if (text.toLowerCase().includes(word)) {
+      if (words.includes(word)) {
         newResults[word] = {
           isFillerWord: true,
           fillerSimilarity: 1,
@@ -130,7 +130,11 @@ self.addEventListener("message", async (event) => {
     // Only use transformer for other filler words
     const remainingWords = Object.keys(USAGE_PATTERNS)
       .filter((word) => !["uh", "um"].includes(word))
-      .filter((word) => text.toLowerCase().includes(word));
+      .filter((word) => {
+        // Create a regex that matches the word as a whole word
+        const wordRegex = new RegExp(`\\b${word}\\b`, "i");
+        return wordRegex.test(text);
+      });
 
     if (remainingWords.length > 0) {
       let extractor = await PipelineSingleton.getInstance((x) => {
