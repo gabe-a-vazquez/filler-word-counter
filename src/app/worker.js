@@ -114,7 +114,12 @@ self.addEventListener("message", async (event) => {
     const newResults = {};
 
     // First handle "uh" and "um" without using the transformer
-    const words = text.toLowerCase().split(/\s+/);
+    // Clean the text by removing punctuation and splitting into words
+    const words = text
+      .toLowerCase()
+      .replace(/[.,!?;:'"()\[\]{}]/g, "")
+      .split(/\s+/);
+
     ["uh", "um"].forEach((word) => {
       if (words.includes(word)) {
         newResults[word] = {
