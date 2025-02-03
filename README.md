@@ -1,5 +1,7 @@
 # SpeechAI
 
+<img src="public/demo.png" alt="SpeechAI Demo" width="600"/>
+
 A modern web application designed to help users improve their public speaking skills through real-time filler word detection and comprehensive speech analytics.
 
 ## 🌟 Features
