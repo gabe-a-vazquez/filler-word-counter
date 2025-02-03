@@ -32,7 +32,62 @@ const USAGE_PATTERNS = {
       "They act like professionals",
     ],
   },
-  // Add other filler words as needed
+  basically: {
+    filler_patterns: [
+      "I basically just went there",
+      "It's basically kind of like",
+      "We basically did nothing",
+      "She basically always does this",
+    ],
+    meaningful_patterns: [
+      "The problem is basically solved",
+      "This is basically algebra",
+      "The concept is basically sound",
+      "The foundation is basically complete",
+    ],
+  },
+  literally: {
+    filler_patterns: [
+      "I literally can't even",
+      "She literally always says that",
+      "It's literally so annoying",
+      "They literally just left",
+    ],
+    meaningful_patterns: [
+      "The word literally means exactly",
+      "Take this literally",
+      "The instructions should be followed literally",
+      "The translation is literally correct",
+    ],
+  },
+  actually: {
+    filler_patterns: [
+      "I actually just thought",
+      "It's actually kind of weird",
+      "Actually, I don't know",
+      "We actually were going to",
+    ],
+    meaningful_patterns: [
+      "Is this actually true?",
+      "The results were actually surprising",
+      "This actually happened yesterday",
+      "The experiment actually worked",
+    ],
+  },
+  // so: {
+  //   filler_patterns: [
+  //     "I'm so like whatever",
+  //     "It's so totally awesome",
+  //     "So, anyway, as I was saying",
+  //     "So, yeah, that happened",
+  //   ],
+  //   meaningful_patterns: [
+  //     "I am so happy",
+  //     "The water is so cold",
+  //     "She ran so fast",
+  //     "They worked so hard",
+  //   ],
+  // },
 };
 
 function cosineSimilarity(embeddings1, embeddings2) {
@@ -56,21 +111,39 @@ let accumulatedResults = {};
 self.addEventListener("message", async (event) => {
   try {
     const { text } = event.data;
-
-    let extractor = await PipelineSingleton.getInstance((x) => {
-      self.postMessage({ status: "progress", data: x });
-    });
-
-    const textEmbedding = await extractor(text, {
-      pooling: "mean",
-      normalize: true,
-    });
-
     const newResults = {};
 
-    for (const [word, patterns] of Object.entries(USAGE_PATTERNS)) {
-      // Only analyze if the new text contains the word
+    // First handle "uh" and "um" without using the transformer
+    text.toLowerCase().split(/\s+/);
+    ["uh", "um"].forEach((word) => {
       if (text.toLowerCase().includes(word)) {
+        newResults[word] = {
+          isFillerWord: true,
+          fillerSimilarity: 1,
+          meaningfulSimilarity: 0,
+          confidence: 1,
+          context: text,
+        };
+      }
+    });
+
+    // Only use transformer for other filler words
+    const remainingWords = Object.keys(USAGE_PATTERNS)
+      .filter((word) => !["uh", "um"].includes(word))
+      .filter((word) => text.toLowerCase().includes(word));
+
+    if (remainingWords.length > 0) {
+      let extractor = await PipelineSingleton.getInstance((x) => {
+        self.postMessage({ status: "progress", data: x });
+      });
+
+      const textEmbedding = await extractor(text, {
+        pooling: "mean",
+        normalize: true,
+      });
+
+      for (const word of remainingWords) {
+        const patterns = USAGE_PATTERNS[word];
         const fillerEmbeddings = await Promise.all(
           patterns.filler_patterns.map((p) =>
             extractor(p, { pooling: "mean", normalize: true })

@@ -5,7 +5,7 @@ export const FILLER_WORDS = [
   "basically",
   "literally",
   "actually",
-  "so",
+  // "so",
 ] as const;
 
 export const calculateStats = (
@@ -41,6 +41,7 @@ export const countFillerWords = (
 
   // Process new results and add to counts
   Object.entries(transformerResults).forEach(([word, result]) => {
+    console.log(word);
     console.log(result);
     if (result.isFillerWord) {
       if (!newCounts[word]) newCounts[word] = 1;
