@@ -18,7 +18,7 @@ const nextConfig = {
               default-src 'self';
               script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.stripe.com https://apis.google.com https://*.googleusercontent.com https://cdn.jsdelivr.net;
               frame-src 'self' https://*.stripe.com https://accounts.google.com https://*.google.com https://*.firebaseapp.com;
-              connect-src 'self' https://*.stripe.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.googleapis.com wss://*.deepgram.com https://*.deepgram.com https://*.huggingface.co https://huggingface.co https://cdn-lfs.hf.co https://cdn.jsdelivr.net;
+              connect-src 'self' https://*.stripe.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.googleapis.com wss://*.deepgram.com https://*.deepgram.com https://*.huggingface.co https://huggingface.co https://cdn-lfs.hf.co https://cdn.jsdelivr.net https://api.smith.langchain.com;
               img-src 'self' data: https://*.stripe.com https://lh3.googleusercontent.com https://*.googleusercontent.com;
               style-src 'self' 'unsafe-inline';
             `

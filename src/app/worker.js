@@ -1,4 +1,9 @@
 import { pipeline, env } from "@huggingface/transformers";
+import {
+  createRun,
+  updateRun,
+  recordConfidence,
+} from "../lib/langsmith/langsmith-utils";
 
 // Skip local model check
 env.allowLocalModels = false;
@@ -105,16 +110,30 @@ function calculateAverageSimilarity(embedding, patternEmbeddings) {
   return similarities.reduce((sum, val) => sum + val, 0) / similarities.length;
 }
 
-let accumulatedResults = {};
-
 // Listen for messages from the main thread
 self.addEventListener("message", async (event) => {
+  let runId;
+  const startTime = Date.now();
+
   try {
     const { text } = event.data;
-    const newResults = {};
 
-    // First handle "uh" and "um" without using the transformer
-    // Clean the text by removing punctuation and splitting into words
+    // Create a new run in LangSmith
+    const run = await createRun(text, {
+      textLength: text.length,
+      timestamp: new Date().toISOString(),
+    });
+    runId = run?.id || run;
+
+    const newResults = {};
+    const processingTimes = {
+      simpleWordMatch: 0,
+      embedding: 0,
+      similarity: 0,
+    };
+
+    // Track simple word matching time
+    const simpleMatchStart = Date.now();
     const words = text
       .toLowerCase()
       .replace(/[.,!?;:'"()\[\]{}]/g, "")
@@ -131,6 +150,8 @@ self.addEventListener("message", async (event) => {
         };
       }
     });
+
+    processingTimes.simpleWordMatch = Date.now() - simpleMatchStart;
 
     // Only use transformer for other filler words
     const remainingWords = Object.keys(USAGE_PATTERNS)
@@ -185,7 +206,26 @@ self.addEventListener("message", async (event) => {
       }
     }
 
-    // Only send if we have new results
+    // Update run with results and metrics
+    if (runId) {
+      await updateRun(runId, newResults);
+
+      // Record confidence scores for each word
+      const confidenceScores = Object.entries(newResults).forEach(
+        ([word, result]) => {
+          // word,
+          recordConfidence(runId, result.confidence, word);
+          // confidence: result.confidence,
+          // fillerSimilarity: result.fillerSimilarity,
+          // meaningfulSimilarity: result.meaningfulSimilarity,
+          // isFillerWord: result.isFillerWord,
+        }
+      );
+
+      await recordConfidence(runId, confidenceScores);
+    }
+
+    // Send results back to main thread
     if (Object.keys(newResults).length) {
       self.postMessage({
         status: "complete",
@@ -195,6 +235,15 @@ self.addEventListener("message", async (event) => {
     }
   } catch (error) {
     console.error("Error in worker:", error);
+
+    // Log error to LangSmith if we have a runId
+    if (runId) {
+      await updateRun(runId, null, {
+        error: error.message,
+        processingTime: Date.now() - startTime,
+      });
+    }
+
     self.postMessage({
       status: "error",
       error: error.message,
