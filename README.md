@@ -4,6 +4,16 @@
 
 A full-stack web application that leverages AI and real-time speech processing to help users improve their public speaking skills. Built with Next.js, TypeScript, and Firebase.
 
+## 🧠 Filler Word Detection Methodology
+
+Our application employs an advanced embedding-based approach to detect filler words in real-time speech:
+
+1. **Text Embedding**: Using the Supabase/gte-small model from Hugging Face, we convert spoken words into high-dimensional vector representations
+2. **Few-Shot Semantic Search**: Each word is compared against a curated set of examples for both filler and meaningful words using semantic similarity
+3. **Real-time Processing**: Analysis happens in a dedicated Web Worker to ensure smooth performance
+4. **Confidence Scoring**: Each detection includes a confidence score to minimize false positives
+5. **Performance Tracking**: Results are logged and analyzed through LangSmith for continuous improvement
+
 ## 🛠️ Technical Highlights
 
 - **Real-time Speech Processing**: Implemented streaming speech recognition with WebSocket connections and Web Workers for non-blocking performance

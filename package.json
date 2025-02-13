@@ -2,12 +2,14 @@
   "name": "filler-word-counter",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "firebase deploy --only hosting"
+    "deploy": "firebase deploy --only hosting",
+    "evaluate": "NODE_OPTIONS=\"--loader ts-node/esm\" ts-node src/lib/langsmith/evaluators.ts"
   },
   "dependencies": {
     "@deepgram/sdk": "^3.9.0",
@@ -38,6 +40,7 @@
     "stripe": "^17.5.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
+    "ts-node": "^10.9.2",
     "worker-loader": "^3.0.8"
   },
   "devDependencies": {
